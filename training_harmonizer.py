@@ -1,4 +1,4 @@
-from Markov_Chain_For_Chords2 import PhraseAwareMarkovChain
+from phrase_aware_markove_chain import PhraseAwareMarkovChain
 from JazzChord import JazzChord
 from Phrase_Analysis import Note, BeatStrength, PhraseAnalyzer, Phrase
 from typing import List, Tuple, Dict
