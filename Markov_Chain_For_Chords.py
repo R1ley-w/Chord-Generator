@@ -4,6 +4,9 @@ from collections import defaultdict, Counter
 from typing import List, Dict, Tuple, Optional
 import numpy as np
 from JazzChord import JazzChord
+from JazzHarmonizer import JazzHarmonizer
+from Phrase_Analysis import PhraseAnalyzer
+from melody_generator import create_melody_for_progression
 
 class MarkovChain:
     """Markov Chain for jazz chord progression generation"""
@@ -331,6 +334,30 @@ def demo_markov_chain():
     sequence_str = " -> ".join(str(chord) for chord in test_sequence)
     print(f"Given: {sequence_str}")
     print(f"Predicted next: {next_chord}")
+
+def create_training_data_with_phrases():
+    """Create training data that includes phrase analysis"""
+    progressions = create_sample_progressions()
+    phrase_analyses = []
+    
+    # For each progression, create a corresponding melodic phrase structure
+    for progression in progressions:
+        # Create synthetic melody that matches the progression
+        melody_notes = create_melody_for_progression(progression)
+        
+        # Analyze phrases in the melody
+        analyzer = PhraseAnalyzer()
+        phrases = analyzer.analyze_phrases(melody_notes, total_bars=len(progression))
+        
+        phrase_analyses.append(phrases)
+    
+    return progressions, phrase_analyses
+
+# Train the enhanced model
+progressions, phrase_analyses = create_training_data_with_phrases()
+harmonizer = JazzHarmonizer()
+harmonizer.markov_chain.train_with_phrases(progressions, phrase_analyses)
+
 
 if __name__ == "__main__":
     demo_markov_chain()
