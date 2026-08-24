@@ -258,7 +258,7 @@ class JazzChordGeneratorApp:
         if random.random() >= creativity:
             chord = self.scale_detector.get_closest_diatonic_chord(chord, key)
 
-        return self._colorize_chord(chord, creativity)
+        return self._colorize_chord(chord, key, creativity)
 
     _TENSION_POOL = {
         "maj7": ["9", "#11", "13"],
@@ -268,14 +268,15 @@ class JazzChordGeneratorApp:
         "dim7": [],
     }
 
-    def _colorize_chord(self, chord: JazzChord, creativity: float) -> JazzChord:
+    def _colorize_chord(self, chord: JazzChord, key: Key, creativity: float) -> JazzChord:
         """Add harmonic color (tensions, tritone substitutions) proportional to
         creativity. This is what makes high creativity produce more complex
         chords, since temperature alone can only reweight existing candidates."""
         colored = JazzChord(chord.root, chord.quality, list(chord.extensions))
 
-        # Tritone substitution for dominant chords
-        if colored.quality == "7" and random.random() < creativity * 0.5:
+        # Tritone substitution only for the dominant seventh built on the key's
+        # fifth degree (V7 -> bII7), the classic jazz substitution.
+        if self._is_v7_of_key(colored, key) and random.random() < creativity * 0.5:
             root_index = self.scale_detector.note_indices.get(colored.root, 0)
             sub_root = self.scale_detector.index_notes[(root_index + 6) % 12]
             colored = JazzChord(sub_root, "7", colored.extensions)
@@ -286,6 +287,14 @@ class JazzChordGeneratorApp:
                 colored.extensions.append(tension)
 
         return colored
+
+    def _is_v7_of_key(self, chord: JazzChord, key: Key) -> bool:
+        """Return True if the chord is the dominant seventh on the key's 5th."""
+        if chord.quality != "7":
+            return False
+        tonic_pc = self.scale_detector.note_indices.get(key.tonic, 0)
+        root_pc = self.scale_detector.note_indices.get(chord.root, 0)
+        return (root_pc - tonic_pc) % 12 == 7
 
     _CHORD_TONES = {
         "maj7": [0, 4, 7, 11],
