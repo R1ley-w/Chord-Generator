@@ -7,3 +7,4 @@ venv/
 env/
 *.pkl
 jazz_standards_data/
+jazz_progression*.json
