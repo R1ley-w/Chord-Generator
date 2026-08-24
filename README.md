@@ -37,6 +37,7 @@ melody notes
 │   ├── __init__.py             # public API
 │   ├── app.py                  # JazzChordGeneratorApp (orchestration)
 │   ├── gradio_app.py           # Gradio web UI
+│   ├── audio.py                # MIDI rendering (midiutil)
 │   ├── chords.py               # JazzChord data model
 │   ├── markov_chain.py         # MarkovChain (training + prediction)
 │   ├── key_detector.py         # ScaleDetector, Key, ScaleType
@@ -75,10 +76,11 @@ This opens a Gradio interface in your browser where you can:
 
 - paste or type a melody (one note per line: `pitch start_beat duration`),
 - pick a creativity level and rhythm style,
-- generate and download the chord progression as JSON.
+- generate the chord progression and download it as JSON and as a playable MIDI
+  file (voiced chords, rendered with `midiutil`).
 
-Audio playback is planned; the hook lives in
-`chord_generator/gradio_app.py::synthesize_progression_audio`.
+The MIDI rendering lives in `chord_generator/audio.py`
+(`render_progression_to_midi`), so it can be reused outside the web app too.
 
 ### Run the demo
 

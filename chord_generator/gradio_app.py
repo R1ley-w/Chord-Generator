@@ -7,6 +7,7 @@ from typing import List
 import gradio as gr
 
 from .app import CreativityLevel, JazzChordGeneratorApp, RhythmStyle
+from .audio import render_progression_to_midi
 from .phrase_analysis import Note
 
 _CREATIVITY_CHOICES = [level.name for level in CreativityLevel]
@@ -81,20 +82,15 @@ def generate(melody_text, creativity_name, use_phrases, rhythm_style_name):
         use_phrases=use_phrases,
     )
 
-    fd, path = tempfile.mkstemp(suffix=".json", prefix="progression_")
+    fd, json_path = tempfile.mkstemp(suffix=".json", prefix="progression_")
     os.close(fd)
-    app.export_progression(path)
+    app.export_progression(json_path)
 
-    return str(app.current_key), _format_progression(app), path
+    fd, midi_path = tempfile.mkstemp(suffix=".mid", prefix="progression_")
+    os.close(fd)
+    render_progression_to_midi(app.current_progression, midi_path)
 
-
-def synthesize_progression_audio(progression, rhythm_style):
-    """Render a progression to audio.
-
-    Hook point for future playback: return a ``(sample_rate, samples)`` tuple
-    (e.g. from ``midiutil`` or a numpy sine synth) and feed it to ``gr.Audio``.
-    """
-    raise NotImplementedError("Audio playback is not implemented yet.")
+    return str(app.current_key), _format_progression(app), json_path, midi_path
 
 
 def build_app() -> gr.Blocks:
@@ -126,13 +122,14 @@ def build_app() -> gr.Blocks:
             with gr.Column():
                 key_output = gr.Textbox(label="Detected key")
                 progression_output = gr.Markdown()
-                file_output = gr.File(label="Download progression (JSON)")
+                json_output = gr.File(label="Download progression (JSON)")
+                midi_output = gr.File(label="Download MIDI")
 
         demo_btn.click(fn=_demo_melody_text, outputs=melody_input)
         generate_btn.click(
             fn=generate,
             inputs=[melody_input, creativity, use_phrases, rhythm],
-            outputs=[key_output, progression_output, file_output],
+            outputs=[key_output, progression_output, json_output, midi_output],
         )
 
     return demo
