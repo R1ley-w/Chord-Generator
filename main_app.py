@@ -446,6 +446,40 @@ class JazzChordGeneratorApp:
         }
         return voicings.get(chord.quality, "closed position")
 
+    def diagnose(self):
+        """Print diagnostics about the loaded/trained Markov model."""
+        markov = self.markov_chain
+
+        print("\n" + "=" * 50)
+        print("MODEL DIAGNOSTICS")
+        print("=" * 50)
+        print(f"Transitions count: {len(markov.transitions)}")
+        print(f"Probabilities count: {len(markov._probabilities)}")
+        print(f"Chord vocabulary: {len(markov.chord_vocab)}")
+        print(f"Start states: {len(markov.start_states)}")
+
+        print("\nTesting generation:")
+        progression = markov.generate_sequence(length=4, temperature=0.5)
+        print(f"  Generated: {' | '.join(str(chord) for chord in progression)}")
+
+        extended_chords = [
+            str(chord) for chord in markov.chord_vocab
+            if chord.extensions or 'b' in chord.quality or '#' in chord.quality
+        ]
+        print(f"\nExtended chords in vocabulary ({len(extended_chords)}):")
+        for chord in extended_chords[:10]:
+            print(f"  {chord}")
+
+        print("\nTesting state predictions:")
+        test_state = (JazzChord("D", "m7"), JazzChord("G", "7"))
+        if test_state in markov._probabilities:
+            predictions = markov.get_possible_next(test_state, temperature=1.0)
+            print("  Dm7 -> G7 -> ? :")
+            for chord, prob in sorted(predictions.items(), key=lambda x: x[1], reverse=True)[:3]:
+                print(f"    {chord}: {prob:.3f}")
+        else:
+            print("  Test state (Dm7, G7) not found in model")
+
 # Example usage and demonstration
 def demo_complete_app():
     """Demonstrate the complete application"""

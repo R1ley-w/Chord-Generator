@@ -7,7 +7,7 @@ import re
 from typing import List, Dict, Tuple, Optional
 from urllib.parse import urljoin
 import os
-from Markov_Chain_For_Chords import JazzChord
+from Markov_Chain_For_Chords import JazzChord, MarkovChain
 from key_detector import ScaleDetector
 
 class JazzStandardsScraper:
@@ -494,6 +494,145 @@ class JazzStandardsScraper:
         print(f"  Min: {min(lengths)} chords")
         print(f"  Max: {max(lengths)} chords") 
         print(f"  Avg: {sum(lengths)/len(lengths):.1f} chords")
+
+class JazzStandardsParser:
+    """Parser for the rich jazz-standards JSON format with sections and chords."""
+
+    def __init__(self):
+        self.chord_mappings = {
+            "6": "maj7", "M": "maj7", "M7": "maj7", "Δ": "maj7",
+            "m": "m7", "mi": "m7", "min": "m7", "-": "m7",
+            "dom": "7", "dom7": "7",
+            "ø": "m7b5", "hdim": "m7b5", "min7b5": "m7b5",
+            "dim": "dim7", "°": "dim7",
+            "sus": "7sus4", "sus4": "7sus4", "sus2": "7sus2",
+        }
+
+    def parse_json_file(self, file_path: str) -> List[List[JazzChord]]:
+        """Parse the JSON file and extract chord progressions for training."""
+        print(f"Parsing jazz standards from {file_path}...")
+
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        all_progressions = []
+        for standard in data:
+            title = standard.get("Title", "Unknown")
+            sections = standard.get("Sections", [])
+
+            progression = self._extract_chords_from_sections(sections)
+            if progression:
+                all_progressions.append(progression)
+                print(f"  {title} - {len(progression)} chords")
+
+        print(f"Extracted {len(all_progressions)} progressions from {len(data)} standards")
+        return all_progressions
+
+    def _extract_chords_from_sections(self, sections: List[Dict]) -> List[JazzChord]:
+        """Extract chords from all sections of a standard."""
+        all_chords = []
+        for section in sections:
+            main_segment = section.get("MainSegment", {})
+            if main_segment and "Chords" in main_segment:
+                all_chords.extend(self._parse_chord_string(main_segment["Chords"]))
+
+            for ending in section.get("Endings", []):
+                if "Chords" in ending:
+                    all_chords.extend(self._parse_chord_string(ending["Chords"]))
+
+        return all_chords
+
+    def _parse_chord_string(self, chord_string: str) -> List[JazzChord]:
+        """Parse a chord string like 'D9|Fm6|D9|Fm6|C|C7,B7,Bb7,A7'."""
+        chords = []
+        for bar in chord_string.split('|'):
+            for chord_str in bar.split(','):
+                chord_str = chord_str.strip()
+                if not chord_str:
+                    continue
+                jazz_chord = self._parse_single_chord(chord_str)
+                if jazz_chord:
+                    chords.append(jazz_chord)
+        return chords
+
+    def _parse_single_chord(self, chord_str: str) -> Optional[JazzChord]:
+        """Parse a single chord symbol into a JazzChord object."""
+        root_match = re.match(r'^([A-G][#b]?)', chord_str)
+        if not root_match:
+            return None
+
+        root = root_match.group(1)
+        rest = chord_str[len(root):]
+        return JazzChord(root, self._determine_chord_quality(rest), self._extract_extensions(rest))
+
+    def _determine_chord_quality(self, rest: str) -> str:
+        """Determine chord quality from the remainder of the chord symbol."""
+        if not rest:
+            return "7"
+
+        for indicator, quality in self.chord_mappings.items():
+            if indicator in rest:
+                return quality
+
+        if any(char.isdigit() for char in rest):
+            return "7"
+        return "maj7"
+
+    def _extract_extensions(self, rest: str) -> List[str]:
+        """Extract chord extensions from the chord symbol."""
+        extensions = []
+        for pattern, ext_name in {"9": "9", "11": "11", "13": "13",
+                                  "b9": "b9", "#9": "#9", "#11": "#11", "b13": "b13"}.items():
+            if pattern in rest:
+                extensions.append(ext_name)
+        return extensions
+
+class JazzStandardsTrainer:
+    """Trains a Markov chain using the rich jazz-standards JSON format."""
+
+    def __init__(self):
+        self.parser = JazzStandardsParser()
+        self.markov_chain = MarkovChain(order=2)
+
+    def train_from_json(self, json_file_path: str) -> MarkovChain:
+        """Train a Markov chain from a standards JSON file."""
+        training_data = self.parser.parse_json_file(json_file_path)
+        if not training_data:
+            print("No training data found!")
+            return self.markov_chain
+
+        self.markov_chain.train(training_data)
+        self._print_training_stats(training_data)
+        return self.markov_chain
+
+    def _print_training_stats(self, training_data: List[List[JazzChord]]):
+        """Print statistics about the training data."""
+        total_standards = len(training_data)
+        total_chords = sum(len(prog) for prog in training_data)
+        avg_chords = total_chords / total_standards if total_standards else 0
+
+        print(f"Training stats: {total_standards} standards, {total_chords} chords, "
+              f"{avg_chords:.1f} chords/standard, {len(self.markov_chain.transitions)} states")
+
+        chord_counts = {}
+        for progression in training_data:
+            for chord in progression:
+                chord_str = str(chord)
+                chord_counts[chord_str] = chord_counts.get(chord_str, 0) + 1
+
+        print("Most common chords:")
+        for chord, count in sorted(chord_counts.items(), key=lambda x: x[1], reverse=True)[:10]:
+            print(f"  {chord}: {count} times")
+
+    def test_generation(self, num_sequences: int = 5):
+        """Generate sample progressions at varied creativity levels."""
+        print(f"Generating {num_sequences} sample progressions:")
+        for i in range(num_sequences):
+            progression = self.markov_chain.generate_sequence(
+                length=8,
+                temperature=0.5 + (i * 0.1)
+            )
+            print(f"  {i + 1}. {' | '.join(str(chord) for chord in progression)}")
 
 def main():
     """Main function to run the scraper"""
