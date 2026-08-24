@@ -154,7 +154,7 @@ class ScaleDetector:
                 best_scale_type = ScaleType.NATURAL_MINOR
         
         # Apply jazz scale preferences
-        best_scale_type = self._apply_jazz_preferences(best_scale_type, pitch_classes)
+        best_scale_type = self._apply_jazz_preferences(best_scale_type, best_key, pitch_classes)
         
         return Key(
             tonic=self.index_notes[best_key],
@@ -184,47 +184,37 @@ class ScaleDetector:
         
         return correlation
     
-    def _apply_jazz_preferences(self, detected_scale: ScaleType, 
+    def _apply_jazz_preferences(self, detected_scale: ScaleType, tonic: int,
                               pitch_classes: List[int]) -> ScaleType:
-        """Adjust scale type based on jazz context and note content"""
+        """Adjust scale type based on jazz context and note content.
+
+        Intervals are measured relative to the detected tonic, so the checks
+        reflect the melody's relationship to the key (not absolute pitch class).
+        """
         if detected_scale == ScaleType.NATURAL_MINOR:
-            # In jazz, dorian is often preferred over natural minor
-            if self._has_minor_sixth(pitch_classes):
-                return ScaleType.DORIAN
-            elif self._has_major_seventh(pitch_classes):
+            # Major 6th + major 7th -> melodic minor; minor 6th + major 7th
+            # (augmented 2nd) -> harmonic minor; major 6th -> dorian.
+            if (self._has_pitch_class(pitch_classes, (tonic + 9) % 12)
+                    and self._has_pitch_class(pitch_classes, (tonic + 11) % 12)):
                 return ScaleType.MELODIC_MINOR
-            elif self._has_augmented_second(pitch_classes):
+            if (self._has_pitch_class(pitch_classes, (tonic + 8) % 12)
+                    and self._has_pitch_class(pitch_classes, (tonic + 11) % 12)):
                 return ScaleType.HARMONIC_MINOR
-        
+            if self._has_pitch_class(pitch_classes, (tonic + 9) % 12):
+                return ScaleType.DORIAN
+
         elif detected_scale == ScaleType.MAJOR:
-            # Check for lydian (#4) or mixolydian (b7) characteristics
-            if self._has_raised_fourth(pitch_classes):
+            # #4 -> lydian; b7 -> mixolydian
+            if self._has_pitch_class(pitch_classes, (tonic + 6) % 12):
                 return ScaleType.LYDIAN
-            elif self._has_flatted_seventh(pitch_classes):
+            if self._has_pitch_class(pitch_classes, (tonic + 10) % 12):
                 return ScaleType.MIXOLYDIAN
-        
+
         return detected_scale
-    
-    def _has_minor_sixth(self, pitch_classes: List[int]) -> bool:
-        """Check if the melody suggests a minor 6th (characteristic of dorian)"""
-        return any(pc == 8 for pc in pitch_classes)  # Minor 6th is 8 semitones above tonic
-    
-    def _has_major_seventh(self, pitch_classes: List[int]) -> bool:
-        """Check for major 7th (characteristic of melodic minor)"""
-        return any(pc == 11 for pc in pitch_classes)
-    
-    def _has_augmented_second(self, pitch_classes: List[int]) -> bool:
-        """Check for augmented 2nd (characteristic of harmonic minor)"""
-        # Between minor 3rd and perfect 4th
-        return any(pc == 3 for pc in pitch_classes) and any(pc == 6 for pc in pitch_classes)
-    
-    def _has_raised_fourth(self, pitch_classes: List[int]) -> bool:
-        """Check for raised 4th (characteristic of lydian)"""
-        return any(pc == 6 for pc in pitch_classes)  # #4 is 6 semitones above tonic
-    
-    def _has_flatted_seventh(self, pitch_classes: List[int]) -> bool:
-        """Check for flatted 7th (characteristic of mixolydian)"""
-        return any(pc == 10 for pc in pitch_classes)  # b7 is 10 semitones above tonic
+
+    def _has_pitch_class(self, pitch_classes: List[int], pc: int) -> bool:
+        """Return True if a pitch class is present in the melody."""
+        return any(p == pc for p in pitch_classes)
     
     def _simple_key_detection(self, pitch_classes: List[int]) -> Key:
         """Simple key detection based on note frequency and circle of fifths"""
@@ -247,7 +237,7 @@ class ScaleDetector:
             scale_type = ScaleType.MAJOR
         
         # Apply jazz preferences
-        scale_type = self._apply_jazz_preferences(scale_type, pitch_classes)
+        scale_type = self._apply_jazz_preferences(scale_type, most_common, pitch_classes)
         
         return Key(
             tonic=self.index_notes[most_common],
