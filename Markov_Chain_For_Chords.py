@@ -4,8 +4,6 @@ from collections import defaultdict, Counter
 from typing import List, Dict, Tuple, Optional
 import numpy as np
 from JazzChord import JazzChord
-from Phrase_Analysis import PhraseAnalyzer
-from melody_generator import create_melody_for_progression
 
 class MarkovChain:
     """Markov Chain for jazz chord progression generation"""

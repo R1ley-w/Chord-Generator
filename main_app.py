@@ -1,12 +1,9 @@
 # main_app.py
-import pickle
 import random
 import json
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
-from collections import defaultdict, Counter
 
 # Import all our modules
 from Markov_Chain_For_Chords import MarkovChain, JazzChord

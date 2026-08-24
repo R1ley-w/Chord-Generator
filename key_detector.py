@@ -1,13 +1,11 @@
-import math
 import random
 from typing import List, Tuple
 from dataclasses import dataclass
 from enum import Enum
 from collections import Counter
-import numpy as np
 
 from JazzChord import JazzChord
-from Markov_Chain_For_Chords import MarkovChain, JazzChord
+from Markov_Chain_For_Chords import MarkovChain
 from Phrase_Analysis import Note
 
 class ScaleType(Enum):

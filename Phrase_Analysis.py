@@ -2,7 +2,6 @@ import math
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
 
 class BeatStrength(Enum):
     STRONG = 3

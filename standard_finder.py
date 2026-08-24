@@ -5,11 +5,10 @@ import json
 import time
 import re
 from typing import List, Dict, Tuple, Optional
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 import os
 from Markov_Chain_For_Chords import JazzChord
 from key_detector import ScaleDetector
-import random
 
 class JazzStandardsScraper:
     """Scrapes jazz standards from public archives and converts to training data"""

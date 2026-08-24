@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict
+from typing import List
 from dataclasses import dataclass
 
 from JazzChord import JazzChord
