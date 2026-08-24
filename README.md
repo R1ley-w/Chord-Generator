@@ -31,10 +31,12 @@ melody notes
 
 ```
 .
-├── main.py                     # entry point (demo / interactive)
+├── main.py                     # CLI entry point (demo / interactive)
+├── webapp.py                   # web app entry point (Gradio)
 ├── chord_generator/            # the source package
 │   ├── __init__.py             # public API
 │   ├── app.py                  # JazzChordGeneratorApp (orchestration)
+│   ├── gradio_app.py           # Gradio web UI
 │   ├── chords.py               # JazzChord data model
 │   ├── markov_chain.py         # MarkovChain (training + prediction)
 │   ├── key_detector.py         # ScaleDetector, Key, ScaleType
@@ -44,7 +46,8 @@ melody notes
 │   └── standard_finder.py      # jazz standards scraper / parser / trainer
 ├── data/
 │   └── trained_jazz_model.json # pre-trained Markov model (4136 states)
-├── requirements.txt
+├── requirements.txt            # runtime deps (numpy + gradio)
+├── requirements-scrape.txt     # optional: scraping/training deps
 └── README.md
 ```
 
@@ -56,7 +59,26 @@ Requires Python 3.8+.
 pip install -r requirements.txt
 ```
 
+The core runtime needs only `numpy` and `gradio`. The optional
+`requirements-scrape.txt` (`requests`, `beautifulsoup4`) is only needed to
+scrape jazz standards online when training a brand-new model.
+
 ## Usage
+
+### Web app (recommended)
+
+```bash
+python webapp.py
+```
+
+This opens a Gradio interface in your browser where you can:
+
+- paste or type a melody (one note per line: `pitch start_beat duration`),
+- pick a creativity level and rhythm style,
+- generate and download the chord progression as JSON.
+
+Audio playback is planned; the hook lives in
+`chord_generator/gradio_app.py::synthesize_progression_audio`.
 
 ### Run the demo
 
