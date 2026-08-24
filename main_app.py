@@ -169,7 +169,11 @@ class JazzChordGeneratorApp:
         progression = []
         previous_chords = []
         temperature = creativity.temperature
-        
+
+        # Roots of the diatonic chords, used to constrain the Markov fallback
+        # distribution to chords that actually belong in the detected key.
+        allowed_roots = {c.root for c in self.scale_detector.get_diatonic_chords(self.current_key)}
+
         for i in range(len(change_points) - 1):
             start_beat = change_points[i]
             duration = change_points[i + 1] - start_beat
@@ -183,7 +187,8 @@ class JazzChordGeneratorApp:
             # Predict next chord
             next_chord = self.markov_chain.predict_next(
                 previous_chords, 
-                temperature=temperature
+                temperature=temperature,
+                allowed_roots=allowed_roots
             )
             
             # Apply key constraints based on creativity level

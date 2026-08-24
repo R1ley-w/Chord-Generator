@@ -72,44 +72,50 @@ class MarkovChain:
         self.start_states = [state for state, count in start_counter.most_common(10)]
         print(f"Found {len(self.start_states)} common starting sequences")
     
-    def predict_next(self, previous_chords: List[JazzChord], temperature: float = 1.0) -> JazzChord:
+    def predict_next(self, previous_chords: List[JazzChord], temperature: float = 1.0,
+                     allowed_roots: Optional[Set[str]] = None) -> JazzChord:
         """
         Predict the next chord given previous chords
-        
+
         Args:
             previous_chords: List of previous chords (length should be >= order)
             temperature: Controls randomness (0.1 = conservative, 2.0 = creative)
+            allowed_roots: Optional set of root note names (e.g. {"C", "D", "E"})
+                used to constrain the fallback distribution to the current key.
         """
         if len(previous_chords) < self.order:
             # Pad with common starting chords if needed
             padded_chords = self._pad_sequence(previous_chords)
         else:
             padded_chords = previous_chords[-self.order:]
-        
+
         state = tuple(padded_chords)
-        candidates = self.get_possible_next(state, temperature)
-        
+        candidates = self.get_possible_next(state, temperature, allowed_roots=allowed_roots)
+
         if not candidates:
             # Fallback: return a random diatonic chord
             return self._get_random_diatonic_fallback(previous_chords[-1] if previous_chords else None)
-        
+
         return self._weighted_choice(candidates)
-    
-    def get_possible_next(self, state: Tuple[JazzChord, ...], temperature: float = 1.0) -> Dict[JazzChord, float]:
+
+    def get_possible_next(self, state: Tuple[JazzChord, ...], temperature: float = 1.0,
+                          allowed_roots: Optional[Set[str]] = None) -> Dict[JazzChord, float]:
         """Get possible next chords and their probabilities for a given state.
 
         Temperature is applied uniformly, including for fallback (unknown
-        state) distributions, so it always has an effect.
+        state) distributions, so it always has an effect. ``allowed_roots``
+        constrains the fallback to chords rooted in the current key.
         """
-        probabilities = self._lookup_probabilities(state)
+        probabilities = self._lookup_probabilities(state, allowed_roots)
         return self._apply_temperature(probabilities, temperature)
 
-    def _lookup_probabilities(self, state: Tuple[JazzChord, ...]) -> Dict[JazzChord, float]:
+    def _lookup_probabilities(self, state: Tuple[JazzChord, ...],
+                              allowed_roots: Optional[Set[str]] = None) -> Dict[JazzChord, float]:
         """Return the raw transition distribution for a state, falling back to
-        lower-order states and finally global frequencies."""
+        lower-order states and finally (key-filtered) global frequencies."""
         if state in self._probabilities:
             return self._probabilities[state].copy()
-        return self._handle_unknown_state(state)
+        return self._handle_unknown_state(state, allowed_roots)
 
     def _apply_temperature(self, probabilities: Dict[JazzChord, float], temperature: float) -> Dict[JazzChord, float]:
         """Rescale a distribution.
@@ -132,28 +138,38 @@ class MarkovChain:
 
         return {chord: float(scaled_probs[i]) for i, chord in enumerate(chords)}
 
-    def _handle_unknown_state(self, state: Tuple[JazzChord, ...]) -> Dict[JazzChord, float]:
+    def _handle_unknown_state(self, state: Tuple[JazzChord, ...],
+                              allowed_roots: Optional[Set[str]] = None) -> Dict[JazzChord, float]:
         """Handle cases where the state hasn't been seen before.
 
         Backs off through progressively lower-order states before falling back
-        to global chord frequencies.
+        to global chord frequencies (optionally filtered to the current key).
         """
         for n in range(1, len(state)):
             lower_state = state[n:]
             if lower_state in self._probabilities:
                 return self._probabilities[lower_state].copy()
 
-        return self._get_global_frequencies()
-    
-    def _get_global_frequencies(self) -> Dict[JazzChord, float]:
-        """Get global frequency of all chords in training data"""
+        return self._get_global_frequencies(allowed_roots)
+
+    def _get_global_frequencies(self, allowed_roots: Optional[Set[str]] = None) -> Dict[JazzChord, float]:
+        """Get global frequency of all chords in training data, optionally
+        restricted to chords whose root is in ``allowed_roots``."""
         all_chords = []
         for state_probs in self._probabilities.values():
             all_chords.extend(state_probs.keys())
-        
+
         chord_counts = Counter(all_chords)
         total = sum(chord_counts.values())
-        return {chord: count / total for chord, count in chord_counts.items()}
+        frequencies = {chord: count / total for chord, count in chord_counts.items()}
+
+        if allowed_roots is not None:
+            filtered = {c: p for c, p in frequencies.items() if c.root in allowed_roots}
+            if filtered:
+                total_filtered = sum(filtered.values())
+                return {c: p / total_filtered for c, p in filtered.items()}
+
+        return frequencies
     
     def _weighted_choice(self, weighted_dict: Dict[JazzChord, float]) -> JazzChord:
         """Make a weighted random choice"""
