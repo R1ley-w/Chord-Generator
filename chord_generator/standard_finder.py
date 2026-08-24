@@ -1,19 +1,23 @@
-# jazz_standards_scraper.py
+# standard_finder.py
 import requests
 from bs4 import BeautifulSoup
 import json
 import time
 import re
+from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from urllib.parse import urljoin
 import os
-from Markov_Chain_For_Chords import JazzChord, MarkovChain
-from key_detector import ScaleDetector
+from .markov_chain import JazzChord, MarkovChain
+from .key_detector import ScaleDetector
+
+# Default location for scraped standards, relative to the project root.
+_DEFAULT_DATA_DIR = str(Path(__file__).resolve().parent.parent / "data" / "jazz_standards")
 
 class JazzStandardsScraper:
     """Scrapes jazz standards from public archives and converts to training data"""
-    
-    def __init__(self, data_dir: str = "jazz_standards_data"):
+
+    def __init__(self, data_dir: str = _DEFAULT_DATA_DIR):
         self.data_dir = data_dir
         self.scale_detector = ScaleDetector()
         os.makedirs(data_dir, exist_ok=True)

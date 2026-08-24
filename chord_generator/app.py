@@ -1,17 +1,22 @@
-# main_app.py
+# app.py
 import os
 import random
 import json
+from pathlib import Path
 from typing import List, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
 
 # Import all our modules
-from Markov_Chain_For_Chords import MarkovChain, JazzChord
-from key_detector import ScaleDetector, Key, ScaleType
-from Phrase_Analysis import PhraseAnalyzer, Note, Phrase, BeatStrength
-from melody_generator import MelodyGenerator, create_melody_for_progression
-from standard_finder import JazzStandardsScraper
+from .markov_chain import MarkovChain, JazzChord
+from .key_detector import ScaleDetector, Key, ScaleType
+from .phrase_analysis import PhraseAnalyzer, Note, Phrase, BeatStrength
+from .melody_generator import MelodyGenerator, create_melody_for_progression
+from .standard_finder import JazzStandardsScraper
+
+# Location of bundled data, relative to the project root (not the CWD).
+_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DEFAULT_MODEL_PATH = str(_DATA_DIR / "trained_jazz_model.json")
 
 class CreativityLevel(Enum):
     """Creativity in [0, 1]. Maps to a Markov temperature so that higher
@@ -72,7 +77,7 @@ class JazzChordGeneratorApp:
         ``use_sample_data=True`` to train on the tiny demo set instead.
         """
         if use_sample_data:
-            from data_utils import create_sample_progressions
+            from .data_utils import create_sample_progressions
             progressions = create_sample_progressions()
             print("Training jazz chord model on sample data...")
             self.markov_chain.train(progressions)
@@ -86,7 +91,7 @@ class JazzChordGeneratorApp:
             self.is_trained = True
             print(f"Model trained on {len(progressions)} progressions!")
 
-    def load_pretrained_model(self, filepath: str = "trained_jazz_model.json") -> bool:
+    def load_pretrained_model(self, filepath: str = DEFAULT_MODEL_PATH) -> bool:
         """Load a pre-trained Markov model from disk. Returns False if absent."""
         if not os.path.exists(filepath):
             print(f"No pretrained model found at {filepath}; training from standards.")
@@ -558,7 +563,3 @@ def interactive_demo():
         demo_melody = app.generate_demo_melody()
         progression = app.process_user_melody(demo_melody)
         app.display_progression()
-
-if __name__ == "__main__":
-    demo_complete_app()
-    # interactive_demo()  # uncomment to run the interactive session

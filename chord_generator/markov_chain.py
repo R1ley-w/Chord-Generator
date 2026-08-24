@@ -4,7 +4,7 @@ import re
 from collections import defaultdict, Counter
 from typing import List, Dict, Tuple, Optional, Set
 import numpy as np
-from JazzChord import JazzChord
+from .chords import JazzChord
 
 class MarkovChain:
     """Markov Chain for jazz chord progression generation"""

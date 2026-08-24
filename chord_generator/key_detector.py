@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from enum import Enum
 from collections import Counter
 
-from JazzChord import JazzChord
-from Markov_Chain_For_Chords import MarkovChain
-from Phrase_Analysis import Note
+from .chords import JazzChord
+from .markov_chain import MarkovChain
+from .phrase_analysis import Note
 
 class ScaleType(Enum):
     MAJOR = "major"

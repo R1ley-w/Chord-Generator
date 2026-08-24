@@ -1,7 +1,7 @@
 # data_utils.py
 import random
 from typing import List
-from Markov_Chain_For_Chords import JazzChord
+from .chords import JazzChord
 
 def create_sample_progressions() -> List[List[JazzChord]]:
     """Create sample jazz progressions for testing"""

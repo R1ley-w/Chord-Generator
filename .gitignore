@@ -6,5 +6,5 @@ __pycache__/
 venv/
 env/
 *.pkl
-jazz_standards_data/
+data/jazz_standards/
 jazz_progression*.json

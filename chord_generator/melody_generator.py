@@ -2,8 +2,8 @@ import random
 from typing import List
 from dataclasses import dataclass
 
-from JazzChord import JazzChord
-from Phrase_Analysis import Note
+from .chords import JazzChord
+from .phrase_analysis import Note
 
 @dataclass
 class ChordTone:
