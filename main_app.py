@@ -1,4 +1,5 @@
 # main_app.py
+import os
 import random
 import json
 from typing import List, Dict, Optional
@@ -63,20 +64,38 @@ class JazzChordGeneratorApp:
         self.current_key = None
         self.rhythm_style = RhythmStyle.SWING
         
-    def train_model(self, use_sample_data: bool = True):
-        """Train the Markov chain model"""
-        print("Training jazz chord model...")
-        
+    def train_model(self, use_sample_data: bool = False):
+        """Train the Markov chain model.
+
+        By default loads the pre-trained model (``trained_jazz_model.json``)
+        when available, otherwise trains on the bundled jazz standards. Pass
+        ``use_sample_data=True`` to train on the tiny demo set instead.
+        """
         if use_sample_data:
-            # Use our sample progressions for demonstration
             from data_utils import create_sample_progressions
             progressions = create_sample_progressions()
-        else:
+            print("Training jazz chord model on sample data...")
+            self.markov_chain.train(progressions)
+            print(f"Model trained on {len(progressions)} progressions!")
+            self.is_trained = True
+            return
+
+        if not self.load_pretrained_model():
             progressions = self._load_jazz_standards()
-        
-        self.markov_chain.train(progressions)
+            self.markov_chain.train(progressions)
+            self.is_trained = True
+            print(f"Model trained on {len(progressions)} progressions!")
+
+    def load_pretrained_model(self, filepath: str = "trained_jazz_model.json") -> bool:
+        """Load a pre-trained Markov model from disk. Returns False if absent."""
+        if not os.path.exists(filepath):
+            print(f"No pretrained model found at {filepath}; training from standards.")
+            return False
+
+        print(f"Loading pretrained jazz model from {filepath}...")
+        self.markov_chain.load_model(filepath)
         self.is_trained = True
-        print(f"Model trained on {len(progressions)} progressions!")
+        return True
 
     def _load_jazz_standards(self) -> List[List[JazzChord]]:
         """Load jazz standards and convert them to Markov training progressions."""

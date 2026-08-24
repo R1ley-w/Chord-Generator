@@ -1,13 +1,19 @@
 import random
 import json
+import re
 from collections import defaultdict, Counter
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Set
 import numpy as np
 from JazzChord import JazzChord
 
 class MarkovChain:
     """Markov Chain for jazz chord progression generation"""
-    
+
+    # Chord quality names, longest first so "m7b5" wins over "m7", etc.
+    _QUALITY_NAMES = ["maj7", "m7b5", "dim7", "7sus4", "7sus2", "m7", "7"]
+    # Extension tokens, longest first so "b13" wins over "13", etc.
+    _EXTENSION_TOKENS = ["b13", "#11", "b9", "#9", "13", "11", "9"]
+
     def __init__(self, order: int = 2):
         self.order = order
         self.transitions = defaultdict(Counter)  # state -> Counter({next_chord: count})
@@ -191,24 +197,39 @@ class MarkovChain:
         
         return random.choice(common_chords)
     
-    def _parse_chord_string(self, chord_str: str) -> JazzChord:
-        """Parse a chord string into JazzChord object (simplified)"""
-        # Simple parser for common chord symbols
-        if "m7b5" in chord_str or "ø" in chord_str:
-            root = chord_str.replace("m7b5", "").replace("ø", "")
-            return JazzChord(root, "m7b5")
-        elif "m7" in chord_str or "-7" in chord_str:
-            root = chord_str.replace("m7", "").replace("-7", "")
-            return JazzChord(root, "m7")
-        elif "maj7" in chord_str or "Δ" in chord_str:
-            root = chord_str.replace("maj7", "").replace("Δ", "")
-            return JazzChord(root, "maj7")
-        elif "7" in chord_str:
-            root = chord_str.replace("7", "")
-            return JazzChord(root, "7")
-        else:
-            return JazzChord(chord_str, "maj7")  # Default assumption
-    
+    def _parse_chord_string(self, chord_str: str) -> Optional[JazzChord]:
+        """Parse a chord symbol produced by ``str(JazzChord)``.
+
+        Handles accidental roots (F#, Bb), every quality the model stores, and
+        concatenated extensions such as "G79b9" -> JazzChord("G", "7", ["9", "b9"]).
+        """
+        match = re.match(r'^([A-G][#b]?)(.*)$', chord_str)
+        if not match:
+            return None
+
+        root, rest = match.groups()
+        quality = "maj7"
+        for name in self._QUALITY_NAMES:
+            if rest.startswith(name):
+                quality = name
+                rest = rest[len(name):]
+                break
+
+        return JazzChord(root, quality, self._parse_extensions(rest))
+
+    def _parse_extensions(self, ext_str: str) -> List[str]:
+        """Tokenize a concatenated extension string into individual tensions."""
+        extensions = []
+        while ext_str:
+            for token in self._EXTENSION_TOKENS:
+                if ext_str.startswith(token):
+                    extensions.append(token)
+                    ext_str = ext_str[len(token):]
+                    break
+            else:
+                ext_str = ext_str[1:]
+        return extensions
+
     def generate_sequence(self, length: int = 8, temperature: float = 1.0, 
                          start_sequence: List[JazzChord] = None) -> List[JazzChord]:
         """Generate a complete chord progression"""
@@ -256,64 +277,48 @@ class MarkovChain:
         with open(filepath, 'w') as f:
             json.dump(model_data, f, indent=2)
     
-    # Add this method to your Markov_Chain_For_Chords.py file in the MarkovChain class
-    def load_model_fixed(self, filepath: str) -> None:
-        """Fixed model loading that properly reconstructs transitions"""
-        try:
-            with open(filepath, 'r') as f:
-                model_data = json.load(f)
-            
-            self.order = model_data['order']
-            self.transitions = defaultdict(Counter)
-            
-            # Reconstruct transitions from probabilities
-            for state_str, probabilities in model_data['transitions'].items():
-                state_chord_strings = json.loads(state_str)
-                state_chords = []
-                
-                for chord_str in state_chord_strings:
-                    jazz_chord = self._parse_chord_string(chord_str)
-                    if jazz_chord:
-                        state_chords.append(jazz_chord)
-                
-                if state_chords:
-                    state_tuple = tuple(state_chords)
-                    
-                    # Convert probabilities back to counts (approximate)
-                    for chord_str, prob in probabilities.items():
-                        jazz_chord = self._parse_chord_string(chord_str)
-                        if jazz_chord:
-                            # Convert probability to approximate count
-                            # We use a base count so transitions work properly
-                            count = max(1, int(prob * 100))
-                            self.transitions[state_tuple][jazz_chord] = count
-            
-            # Recompute probabilities
-            self._compute_probabilities()
-            
-            # Reconstruct vocabulary
-            self.chord_vocab = set()
-            for state in self.transitions.keys():
-                self.chord_vocab.update(state)
-            for next_chords in self.transitions.values():
-                self.chord_vocab.update(next_chords.keys())
-            
-            # Reconstruct start states
-            self.start_states = []
-            for state_list in model_data.get('start_states', []):
-                state_chords = []
-                for chord_str in state_list:
-                    jazz_chord = self._parse_chord_string(chord_str)
-                    if jazz_chord:
-                        state_chords.append(jazz_chord)
-                if state_chords:
-                    self.start_states.append(tuple(state_chords))
-            
-            print(f"✅ Model loaded: {len(self.transitions)} transitions, {len(self.chord_vocab)} chords")
-            
-        except Exception as e:
-            print(f"❌ Error loading model: {e}")
-            raise
+    def load_model(self, filepath: str) -> None:
+        """Load a previously saved model, reconstructing chord objects exactly.
+
+        Probabilities are restored directly (no count round-trip), and state
+        keys are parsed with ``_parse_chord_string`` so extended chords such as
+        "G79b9" survive the round trip.
+        """
+        with open(filepath, 'r') as f:
+            model_data = json.load(f)
+
+        self.order = model_data['order']
+        self._probabilities = {}
+        self.transitions = defaultdict(Counter)
+        self.chord_vocab = set()
+
+        for state_str, probabilities in model_data['transitions'].items():
+            state_chords = [self._parse_chord_string(s) for s in json.loads(state_str)]
+            state_chords = [c for c in state_chords if c is not None]
+            if not state_chords:
+                continue
+
+            state = tuple(state_chords)
+            self._probabilities[state] = {}
+            for chord in state_chords:
+                self.chord_vocab.add(chord)
+
+            for chord_str, prob in probabilities.items():
+                chord = self._parse_chord_string(chord_str)
+                if chord is None:
+                    continue
+                self._probabilities[state][chord] = float(prob)
+                self.transitions[state][chord] = max(1, int(float(prob) * 100))
+                self.chord_vocab.add(chord)
+
+        self.start_states = []
+        for state_list in model_data.get('start_states', []):
+            chords = [self._parse_chord_string(s) for s in state_list]
+            chords = [c for c in chords if c is not None]
+            if chords:
+                self.start_states.append(tuple(chords))
+
+        print(f"Loaded model: {len(self._probabilities)} states, {len(self.chord_vocab)} chords")
 
 # Example usage and testing
 def create_sample_progressions() -> List[List[JazzChord]]:
