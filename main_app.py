@@ -72,12 +72,20 @@ class JazzChordGeneratorApp:
             from data_utils import create_sample_progressions
             progressions = create_sample_progressions()
         else:
-            # In a real app, you'd load from a jazz standards database
             progressions = self._load_jazz_standards()
         
         self.markov_chain.train(progressions)
         self.is_trained = True
         print(f"Model trained on {len(progressions)} progressions!")
+
+    def _load_jazz_standards(self) -> List[List[JazzChord]]:
+        """Load jazz standards and convert them to Markov training progressions."""
+        scraper = JazzStandardsScraper()
+        standards = scraper.load_standards()
+        if not standards:
+            standards = scraper.create_sample_standards_dataset()
+            scraper.save_standards(standards)
+        return scraper.convert_to_training_data(standards)
         
     def process_user_melody(self, melody_notes: List[Note], 
                           creativity: CreativityLevel = CreativityLevel.BALANCED,
@@ -485,21 +493,5 @@ def interactive_demo():
         app.display_progression()
 
 if __name__ == "__main__":
-    # Initialize and scrape
-    scraper = JazzStandardsScraper()
-    standards = scraper.load_standards()  # Load existing
-    if not standards:
-        standards = scraper.create_sample_standards_dataset()  # Create sample data
-        scraper.save_standards(standards)
-
-    # Convert to training data
-    training_data = scraper.convert_to_training_data(standards)
-
-    # Train your Markov chain
-    markov_chain = MarkovChain(order=3)
-    markov_chain.train(training_data)
-    # Run the complete demo
     demo_complete_app()
-    
-    # Uncomment to run interactive demo
-    interactive_demo()
+    # interactive_demo()  # uncomment to run the interactive session

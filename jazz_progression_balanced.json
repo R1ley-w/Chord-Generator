@@ -1,270 +1,300 @@
 {
-  "key": "G lydian",
+  "key": "A lydian",
   "melody_notes": [
     {
-      "pitch": "F#4",
+      "pitch": "C#5",
       "start_beat": 0.0,
-      "duration": 0.2603125075108137
-    },
-    {
-      "pitch": "A4",
-      "start_beat": 0.25,
-      "duration": 0.2485083276408196
+      "duration": 0.5374743575787326
     },
     {
       "pitch": "F#4",
       "start_beat": 0.5,
-      "duration": 0.4826459610149559
-    },
-    {
-      "pitch": "D4",
-      "start_beat": 1.0,
-      "duration": 1.0645974584674418
-    },
-    {
-      "pitch": "F#4",
-      "start_beat": 2.0,
-      "duration": 0.23393644544326914
-    },
-    {
-      "pitch": "D4",
-      "start_beat": 2.25,
-      "duration": 0.27143259592785407
-    },
-    {
-      "pitch": "G4",
-      "start_beat": 2.5,
-      "duration": 0.46057997091905484
-    },
-    {
-      "pitch": "G4",
-      "start_beat": 3.0,
-      "duration": 1.0297338417870532
-    },
-    {
-      "pitch": "D5",
-      "start_beat": 4.0,
-      "duration": 0.26760568228956955
-    },
-    {
-      "pitch": "E5",
-      "start_beat": 4.25,
-      "duration": 0.2297403882111919
-    },
-    {
-      "pitch": "G#4",
-      "start_beat": 4.5,
-      "duration": 0.5256788580629383
-    },
-    {
-      "pitch": "B4",
-      "start_beat": 5.0,
-      "duration": 0.933242715677717
-    },
-    {
-      "pitch": "F#5",
-      "start_beat": 6.0,
-      "duration": 0.2545148694309566
-    },
-    {
-      "pitch": "G4",
-      "start_beat": 6.25,
-      "duration": 0.23402823138593998
-    },
-    {
-      "pitch": "F#5",
-      "start_beat": 6.5,
-      "duration": 0.4502296257947824
-    },
-    {
-      "pitch": "D5",
-      "start_beat": 7.0,
-      "duration": 1.0422785736083666
-    },
-    {
-      "pitch": "G4",
-      "start_beat": 8.0,
-      "duration": 0.26995774479381146
-    },
-    {
-      "pitch": "G4",
-      "start_beat": 8.25,
-      "duration": 0.2351652331718623
-    },
-    {
-      "pitch": "D4",
-      "start_beat": 8.0,
-      "duration": 0.46044937253714247
-    },
-    {
-      "pitch": "G4",
-      "start_beat": 8.5,
-      "duration": 0.4970587460902683
-    },
-    {
-      "pitch": "C4",
-      "start_beat": 9.0,
-      "duration": 0.4500015663638872
-    },
-    {
-      "pitch": "G4",
-      "start_beat": 9.5,
-      "duration": 0.50709493983304
-    },
-    {
-      "pitch": "E4",
-      "start_beat": 10.0,
-      "duration": 0.4554586922560227
+      "duration": 0.5075995149765915
     },
     {
       "pitch": "A4",
+      "start_beat": 1.0,
+      "duration": 0.5388934083398395
+    },
+    {
+      "pitch": "D4",
+      "start_beat": 1.5,
+      "duration": 0.47250936125923954
+    },
+    {
+      "pitch": "D4",
+      "start_beat": 2.0,
+      "duration": 0.4569697866843382
+    },
+    {
+      "pitch": "A4",
+      "start_beat": 2.5,
+      "duration": 0.45187701064913544
+    },
+    {
+      "pitch": "A4",
+      "start_beat": 3.0,
+      "duration": 0.48178348725880227
+    },
+    {
+      "pitch": "A#4",
+      "start_beat": 4.0,
+      "duration": 0.24731926679045704
+    },
+    {
+      "pitch": "B4",
+      "start_beat": 4.25,
+      "duration": 0.22840736952787272
+    },
+    {
+      "pitch": "C#5",
+      "start_beat": 4.5,
+      "duration": 0.4952150038630426
+    },
+    {
+      "pitch": "F#5",
+      "start_beat": 5.0,
+      "duration": 0.9845811551597436
+    },
+    {
+      "pitch": "B4",
+      "start_beat": 6.0,
+      "duration": 0.22565477499808645
+    },
+    {
+      "pitch": "D5",
+      "start_beat": 6.25,
+      "duration": 0.25616931650518954
+    },
+    {
+      "pitch": "E4",
+      "start_beat": 8.0,
+      "duration": 0.5065111595333501
+    },
+    {
+      "pitch": "D4",
+      "start_beat": 8.5,
+      "duration": 0.4844149747656273
+    },
+    {
+      "pitch": "E4",
+      "start_beat": 9.0,
+      "duration": 0.4791191109332054
+    },
+    {
+      "pitch": "C4",
+      "start_beat": 9.5,
+      "duration": 0.5372541922874667
+    },
+    {
+      "pitch": "F#4",
+      "start_beat": 10.0,
+      "duration": 0.4726711498368184
+    },
+    {
+      "pitch": "C4",
       "start_beat": 10.5,
-      "duration": 0.5177013173058933
+      "duration": 0.5497894355455994
     },
     {
       "pitch": "C4",
       "start_beat": 11.0,
-      "duration": 0.5481205621248967
+      "duration": 0.4739981549263461
     },
     {
       "pitch": "E4",
       "start_beat": 11.5,
-      "duration": 0.5239251948808304
+      "duration": 0.4995776484333749
     },
     {
-      "pitch": "C4",
+      "pitch": "A4",
       "start_beat": 12.0,
-      "duration": 0.5048578307481877
+      "duration": 0.45904283934293305
+    },
+    {
+      "pitch": "E4",
+      "start_beat": 12.5,
+      "duration": 0.5258745467689971
+    },
+    {
+      "pitch": "E4",
+      "start_beat": 12.0,
+      "duration": 0.5492935764950383
+    },
+    {
+      "pitch": "D4",
+      "start_beat": 12.5,
+      "duration": 0.5484428136758851
+    },
+    {
+      "pitch": "E4",
+      "start_beat": 13.0,
+      "duration": 0.5084357331572311
+    },
+    {
+      "pitch": "D4",
+      "start_beat": 13.5,
+      "duration": 0.4616879155810505
     },
     {
       "pitch": "G4",
-      "start_beat": 12.5,
-      "duration": 0.4840293191076725
-    },
-    {
-      "pitch": "C4",
-      "start_beat": 13.0,
-      "duration": 0.49955373000314596
-    },
-    {
-      "pitch": "E4",
-      "start_beat": 13.5,
-      "duration": 0.5328682837666365
-    },
-    {
-      "pitch": "E4",
       "start_beat": 14.0,
-      "duration": 0.45842965315584294
+      "duration": 0.5075136962711445
     },
     {
-      "pitch": "E4",
+      "pitch": "F#4",
       "start_beat": 14.5,
-      "duration": 0.4795533392718671
+      "duration": 0.48550001210111426
     },
     {
-      "pitch": "C4",
+      "pitch": "G4",
       "start_beat": 15.0,
-      "duration": 0.5483577687824598
+      "duration": 0.49532326191983583
     },
     {
       "pitch": "D4",
       "start_beat": 15.5,
-      "duration": 0.4721480543581201
+      "duration": 0.4624110862574837
     },
     {
       "pitch": "C4",
       "start_beat": 16.0,
-      "duration": 0.48280244036274883
+      "duration": 0.5222876226272084
     },
     {
-      "pitch": "E4",
-      "start_beat": 16.0,
-      "duration": 0.23386179898173745
-    },
-    {
-      "pitch": "F#4",
-      "start_beat": 16.25,
-      "duration": 0.2565902300811299
-    },
-    {
-      "pitch": "B4",
+      "pitch": "G4",
       "start_beat": 16.5,
-      "duration": 0.46389017156629453
+      "duration": 0.48717246985550416
     },
     {
       "pitch": "F#5",
-      "start_beat": 17.0,
-      "duration": 0.957548572591805
+      "start_beat": 16.0,
+      "duration": 0.2567320100974713
+    },
+    {
+      "pitch": "F#5",
+      "start_beat": 16.25,
+      "duration": 0.27285194664680945
     },
     {
       "pitch": "C#5",
-      "start_beat": 18.0,
-      "duration": 0.23949935582108436
+      "start_beat": 16.5,
+      "duration": 0.4979830895821342
     },
     {
-      "pitch": "D5",
-      "start_beat": 18.25,
-      "duration": 0.24138471429147806
-    },
-    {
-      "pitch": "F#4",
-      "start_beat": 20.0,
-      "duration": 0.23168943321529656
+      "pitch": "G#5",
+      "start_beat": 17.0,
+      "duration": 1.067168453593982
     },
     {
       "pitch": "B4",
-      "start_beat": 20.25,
-      "duration": 0.2545503838313047
+      "start_beat": 18.0,
+      "duration": 0.22994159971960215
     },
     {
-      "pitch": "D4",
-      "start_beat": 20.5,
-      "duration": 0.5423640721196957
-    },
-    {
-      "pitch": "C#5",
-      "start_beat": 21.0,
-      "duration": 0.9460616191332637
-    },
-    {
-      "pitch": "F#4",
-      "start_beat": 22.0,
-      "duration": 0.23953615536187367
+      "pitch": "G#5",
+      "start_beat": 18.25,
+      "duration": 0.24706519077156427
     },
     {
       "pitch": "A4",
-      "start_beat": 22.25,
-      "duration": 0.2520062788224085
+      "start_beat": 18.5,
+      "duration": 0.48824831759675286
     },
     {
-      "pitch": "F#5",
-      "start_beat": 24.0,
-      "duration": 0.23111442661134732
+      "pitch": "A4",
+      "start_beat": 19.0,
+      "duration": 1.0684308822421107
     },
     {
-      "pitch": "F#5",
-      "start_beat": 24.25,
-      "duration": 0.24443404310547776
+      "pitch": "E4",
+      "start_beat": 20.0,
+      "duration": 0.4838178306763709
     },
     {
       "pitch": "B4",
-      "start_beat": 24.5,
-      "duration": 0.498689367813346
+      "start_beat": 20.5,
+      "duration": 0.5459379565051466
     },
     {
-      "pitch": "E5",
+      "pitch": "G4",
+      "start_beat": 21.0,
+      "duration": 0.5101126105719983
+    },
+    {
+      "pitch": "C#5",
+      "start_beat": 21.5,
+      "duration": 0.549673762824139
+    },
+    {
+      "pitch": "A4",
+      "start_beat": 22.0,
+      "duration": 0.5248003417594518
+    },
+    {
+      "pitch": "E4",
+      "start_beat": 22.5,
+      "duration": 0.5195519042453967
+    },
+    {
+      "pitch": "C#5",
+      "start_beat": 23.0,
+      "duration": 0.46615875752619895
+    },
+    {
+      "pitch": "D4",
+      "start_beat": 23.5,
+      "duration": 0.49567467115418984
+    },
+    {
+      "pitch": "F#4",
+      "start_beat": 24.0,
+      "duration": 0.5041729484300819
+    },
+    {
+      "pitch": "F#4",
+      "start_beat": 24.5,
+      "duration": 0.5081615938127743
+    },
+    {
+      "pitch": "A4",
+      "start_beat": 24.0,
+      "duration": 0.4831504045257012
+    },
+    {
+      "pitch": "F#5",
+      "start_beat": 24.5,
+      "duration": 0.5090265110607517
+    },
+    {
+      "pitch": "A#4",
       "start_beat": 25.0,
-      "duration": 1.0756051374386442
+      "duration": 0.49027632469057525
+    },
+    {
+      "pitch": "C#5",
+      "start_beat": 25.5,
+      "duration": 0.5200522294834075
     },
     {
       "pitch": "A#4",
       "start_beat": 26.0,
-      "duration": 0.22857927701318234
+      "duration": 0.4904215860056895
+    },
+    {
+      "pitch": "A4",
+      "start_beat": 26.5,
+      "duration": 0.5338557066741245
+    },
+    {
+      "pitch": "F#5",
+      "start_beat": 27.0,
+      "duration": 0.5259116645984048
     }
   ],
   "chord_progression": [
     {
-      "chord": "C7",
+      "chord": "Amaj7",
       "start_beat": 0.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -274,7 +304,7 @@
       ]
     },
     {
-      "chord": "C7",
+      "chord": "F7",
       "start_beat": 2.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -284,7 +314,7 @@
       ]
     },
     {
-      "chord": "Bm7",
+      "chord": "C#m79",
       "start_beat": 4.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -294,7 +324,7 @@
       ]
     },
     {
-      "chord": "C7",
+      "chord": "B7b99",
       "start_beat": 6.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -304,7 +334,7 @@
       ]
     },
     {
-      "chord": "Dm7",
+      "chord": "C#m7",
       "start_beat": 8.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -314,7 +344,7 @@
       ]
     },
     {
-      "chord": "C7",
+      "chord": "B7#1113",
       "start_beat": 10.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -324,7 +354,7 @@
       ]
     },
     {
-      "chord": "Bbmaj7",
+      "chord": "F#m7",
       "start_beat": 12.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -334,7 +364,7 @@
       ]
     },
     {
-      "chord": "Bm7",
+      "chord": "Gm7911",
       "start_beat": 14.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -344,7 +374,7 @@
       ]
     },
     {
-      "chord": "Bbmaj7",
+      "chord": "B7b9b13",
       "start_beat": 16.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -354,7 +384,7 @@
       ]
     },
     {
-      "chord": "C7",
+      "chord": "Amaj7",
       "start_beat": 18.0,
       "duration": 2.0,
       "rhythm_pattern": [
@@ -364,13 +394,43 @@
       ]
     },
     {
-      "chord": "Dmaj7",
+      "chord": "F#m7911",
       "start_beat": 20.0,
-      "duration": 6.228579277013182,
+      "duration": 2.0,
       "rhythm_pattern": [
-        1.5571448192532955,
-        1.5571448192532955,
-        3.114289638506591
+        0.5,
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "chord": "B7b9#913",
+      "start_beat": 22.0,
+      "duration": 2.0,
+      "rhythm_pattern": [
+        0.5,
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "chord": "C7b9#913b13",
+      "start_beat": 24.0,
+      "duration": 2.0,
+      "rhythm_pattern": [
+        0.5,
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "chord": "B79#9#11b13",
+      "start_beat": 26.0,
+      "duration": 1.5259116645984037,
+      "rhythm_pattern": [
+        0.3814779161496009,
+        0.3814779161496009,
+        0.7629558322992018
       ]
     }
   ],
