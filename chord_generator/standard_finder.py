@@ -1,6 +1,4 @@
 # standard_finder.py
-import requests
-from bs4 import BeautifulSoup
 import json
 import time
 import re
@@ -54,7 +52,9 @@ class JazzStandardsScraper:
             for year in years:
                 url = f"{base_url}/compositions/{year}.htm"
                 print(f"  Scraping {year}s standards...")
-                
+
+                import requests
+                from bs4 import BeautifulSoup
                 response = requests.get(url, timeout=10)
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
@@ -80,6 +80,8 @@ class JazzStandardsScraper:
     def _scrape_individual_standard(self, base_url: str, path: str) -> Optional[Dict]:
         """Scrape an individual standard page"""
         try:
+            import requests
+            from bs4 import BeautifulSoup
             url = urljoin(base_url, path)
             response = requests.get(url, timeout=10)
             soup = BeautifulSoup(response.content, 'html.parser')
@@ -123,6 +125,7 @@ class JazzStandardsScraper:
         
         for mirror in mirrors:
             try:
+                import requests
                 response = requests.get(mirror, timeout=10)
                 if response.status_code == 200:
                     print(f"  Found active mirror: {mirror}")
