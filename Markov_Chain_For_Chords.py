@@ -90,45 +90,53 @@ class MarkovChain:
         return self._weighted_choice(candidates)
     
     def get_possible_next(self, state: Tuple[JazzChord, ...], temperature: float = 1.0) -> Dict[JazzChord, float]:
-        """Get possible next chords and their probabilities for a given state"""
-        if state not in self._probabilities:
-            # Try to find similar states or use fallback
-            return self._handle_unknown_state(state)
-        
-        probabilities = self._probabilities[state].copy()
-        
-        # Apply temperature
-        if temperature != 1.0:
-            probabilities = self._apply_temperature(probabilities, temperature)
-        
-        return probabilities
-    
+        """Get possible next chords and their probabilities for a given state.
+
+        Temperature is applied uniformly, including for fallback (unknown
+        state) distributions, so it always has an effect.
+        """
+        probabilities = self._lookup_probabilities(state)
+        return self._apply_temperature(probabilities, temperature)
+
+    def _lookup_probabilities(self, state: Tuple[JazzChord, ...]) -> Dict[JazzChord, float]:
+        """Return the raw transition distribution for a state, falling back to
+        lower-order states and finally global frequencies."""
+        if state in self._probabilities:
+            return self._probabilities[state].copy()
+        return self._handle_unknown_state(state)
+
     def _apply_temperature(self, probabilities: Dict[JazzChord, float], temperature: float) -> Dict[JazzChord, float]:
-        """Apply temperature to probability distribution"""
-        # Convert to list for processing
+        """Rescale a distribution.
+
+        temperature < 1.0 sharpens (more deterministic); temperature > 1.0
+        flattens (more exploratory); temperature <= 0 selects the argmax.
+        """
+        if not probabilities:
+            return {}
+
         chords = list(probabilities.keys())
-        probs = np.array([probabilities[chord] for chord in chords])
-        
-        # Apply temperature scaling
-        if temperature > 0:
-            scaled_probs = np.power(probs, 1.0 / temperature)
-            scaled_probs = scaled_probs / np.sum(scaled_probs)
-        else:
-            # If temperature is 0, use the most probable chord
+        probs = np.array([probabilities[chord] for chord in chords], dtype=float)
+
+        if temperature <= 0:
             scaled_probs = np.zeros_like(probs)
-            scaled_probs[np.argmax(probs)] = 1.0
-        
+            scaled_probs[int(np.argmax(probs))] = 1.0
+        else:
+            scaled_probs = np.power(probs, 1.0 / temperature)
+            scaled_probs /= np.sum(scaled_probs)
+
         return {chord: float(scaled_probs[i]) for i, chord in enumerate(chords)}
-    
+
     def _handle_unknown_state(self, state: Tuple[JazzChord, ...]) -> Dict[JazzChord, float]:
-        """Handle cases where the state hasn't been seen before"""
-        # Strategy 1: Try lower-order Markov chain
-        if len(state) > 1:
-            lower_state = state[1:]
+        """Handle cases where the state hasn't been seen before.
+
+        Backs off through progressively lower-order states before falling back
+        to global chord frequencies.
+        """
+        for n in range(1, len(state)):
+            lower_state = state[n:]
             if lower_state in self._probabilities:
-                return self._probabilities[lower_state]
-        
-        # Strategy 2: Return global chord frequencies
+                return self._probabilities[lower_state].copy()
+
         return self._get_global_frequencies()
     
     def _get_global_frequencies(self) -> Dict[JazzChord, float]:

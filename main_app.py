@@ -13,10 +13,22 @@ from melody_generator import MelodyGenerator, create_melody_for_progression
 from standard_finder import JazzStandardsScraper
 
 class CreativityLevel(Enum):
-    CONSERVATIVE = 0.3
-    BALANCED = 0.5
+    """Creativity in [0, 1]. Maps to a Markov temperature so that higher
+    creativity actually explores more of the transition distribution."""
+    CONSERVATIVE = 0.0
+    BALANCED = 0.4
     CREATIVE = 0.7
     EXPERIMENTAL = 1.0
+
+    @property
+    def temperature(self) -> float:
+        """Map creativity [0, 1] to temperature [0.1, 2.0].
+
+        Below 1.0 the distribution sharpens (deterministic); above 1.0 it
+        flattens (exploratory). This is what makes 'experimental' actually
+        diverge from 'conservative'.
+        """
+        return 0.1 + self.value * 1.9
 
 class RhythmStyle(Enum):
     SWING = "swing"
@@ -112,7 +124,7 @@ class JazzChordGeneratorApp:
         progression = self._generate_key_aware_progression(
             melody_notes, 
             chord_change_points,
-            creativity.value,
+            creativity,
             phrases if use_phrases else []
         )
         
@@ -124,11 +136,12 @@ class JazzChordGeneratorApp:
     def _generate_key_aware_progression(self, 
                                      melody_notes: List[Note],
                                      change_points: List[float],
-                                     creativity: float,
+                                     creativity: CreativityLevel,
                                      phrases: List[Phrase]) -> List[ChordWithDuration]:
         """Generate progression that respects key and phrase structure"""
         progression = []
         previous_chords = []
+        temperature = creativity.temperature
         
         for i in range(len(change_points) - 1):
             start_beat = change_points[i]
@@ -143,14 +156,14 @@ class JazzChordGeneratorApp:
             # Predict next chord
             next_chord = self.markov_chain.predict_next(
                 previous_chords, 
-                temperature=creativity
+                temperature=temperature
             )
             
             # Apply key constraints based on creativity level
             constrained_chord = self._apply_key_constraints(
                 next_chord, 
                 self.current_key, 
-                creativity
+                creativity.value
             )
             
             # Ensure chord works with melody note
@@ -206,22 +219,88 @@ class JazzChordGeneratorApp:
         return None
     
     def _apply_key_constraints(self, chord: JazzChord, key: Key, creativity: float) -> JazzChord:
-        """Apply key-based constraints to a chord"""
+        """Constrain a chord to the key at low creativity, allow chromaticism at
+        high creativity, and add jazz color (tensions/tritone subs) as
+        creativity rises."""
         # Higher creativity = more chromatic freedom
-        if random.random() < creativity:
-            return chord  # Keep original chord
-        
-        # Lower creativity = more diatonic
-        return self.scale_detector.get_closest_diatonic_chord(chord, key)
-    
+        if random.random() >= creativity:
+            chord = self.scale_detector.get_closest_diatonic_chord(chord, key)
+
+        return self._colorize_chord(chord, creativity)
+
+    _TENSION_POOL = {
+        "maj7": ["9", "#11", "13"],
+        "m7": ["9", "11"],
+        "7": ["b9", "9", "#9", "#11", "13", "b13"],
+        "m7b5": ["9", "11", "b13"],
+        "dim7": [],
+    }
+
+    def _colorize_chord(self, chord: JazzChord, creativity: float) -> JazzChord:
+        """Add harmonic color (tensions, tritone substitutions) proportional to
+        creativity. This is what makes high creativity produce more complex
+        chords, since temperature alone can only reweight existing candidates."""
+        colored = JazzChord(chord.root, chord.quality, list(chord.extensions))
+
+        # Tritone substitution for dominant chords
+        if colored.quality == "7" and random.random() < creativity * 0.5:
+            root_index = self.scale_detector.note_indices.get(colored.root, 0)
+            sub_root = self.scale_detector.index_notes[(root_index + 6) % 12]
+            colored = JazzChord(sub_root, "7", colored.extensions)
+
+        # Add tensions from the pool for this quality
+        for tension in self._TENSION_POOL.get(colored.quality, ["9"]):
+            if random.random() < creativity and tension not in colored.extensions:
+                colored.extensions.append(tension)
+
+        return colored
+
+    _CHORD_TONES = {
+        "maj7": [0, 4, 7, 11],
+        "m7": [0, 3, 7, 10],
+        "7": [0, 4, 7, 10],
+        "m7b5": [0, 3, 6, 10],
+        "dim7": [0, 3, 6, 9],
+    }
+
+    _TENSION_INTERVALS = {
+        "maj7": [2, 6, 9],
+        "m7": [2, 5, 9],
+        "7": [1, 2, 3, 6, 8, 9],
+        "m7b5": [2, 5, 8],
+        "dim7": [],
+    }
+
     def _ensure_melody_harmony(self, chord: JazzChord, melody_note: Optional[str]) -> JazzChord:
-        """Ensure chord works with melody note"""
+        """Ensure the chord is compatible with the melody note, re-harmonizing
+        to the closest diatonic chord that supports the note when it clashes."""
         if not melody_note:
             return chord
-        
-        # Simple check: if melody note is a chord tone
-        # In a full implementation, you'd check if melody note is a chord tone or available tension
-        return chord  # Placeholder - implement proper melody-harmony check
+
+        if self._melody_compatible(chord, melody_note):
+            return chord
+
+        # Re-harmonize to a diatonic chord that supports the melody note
+        if self.current_key is not None:
+            for diatonic in self.scale_detector.get_diatonic_chords(self.current_key):
+                if self._melody_compatible(diatonic, melody_note):
+                    return diatonic
+
+        return chord
+
+    def _melody_compatible(self, chord: JazzChord, melody_note: str) -> bool:
+        """Check if a melody note is a chord tone or available tension."""
+        root_pc = self.scale_detector.note_indices.get(chord.root, 0)
+        note_pc = self._note_pitch_class(melody_note)
+
+        allowed = {root_pc + i for i in self._CHORD_TONES.get(chord.quality, [0, 4, 7])}
+        allowed |= {root_pc + i for i in self._TENSION_INTERVALS.get(chord.quality, [])}
+        return note_pc in {a % 12 for a in allowed}
+
+    def _note_pitch_class(self, pitch: str) -> int:
+        """Convert a pitch string (e.g. 'C4', 'Eb5') to a pitch class (0-11)."""
+        note_name = ''.join(c for c in pitch if not c.isdigit())
+        return self.scale_detector.note_indices.get(note_name, 0)
     
     def _get_rhythm_pattern(self, duration: float) -> List[float]:
         """Get rhythm pattern based on current style"""
