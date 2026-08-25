@@ -7,7 +7,7 @@ from typing import List
 import gradio as gr
 
 from .app import CreativityLevel, JazzChordGeneratorApp, RhythmStyle
-from .audio import render_progression_to_midi
+from .audio import render_midi_to_mp3, render_progression_to_midi
 from .phrase_analysis import Note
 
 _CREATIVITY_CHOICES = [level.name for level in CreativityLevel]
@@ -90,7 +90,20 @@ def generate(melody_text, creativity_name, use_phrases, rhythm_style_name):
     os.close(fd)
     render_progression_to_midi(app.current_progression, midi_path)
 
-    return str(app.current_key), _format_progression(app), json_path, midi_path
+    audio_path = None
+    try:
+        audio_path = render_midi_to_mp3(midi_path)
+    except Exception as exc:
+        print(f"[audio] playback synthesis failed: {exc}")
+
+    return (
+        str(app.current_key),
+        _format_progression(app),
+        audio_path,
+        json_path,
+        midi_path,
+        audio_path,
+    )
 
 
 def build_app() -> gr.Blocks:
@@ -122,14 +135,17 @@ def build_app() -> gr.Blocks:
             with gr.Column():
                 key_output = gr.Textbox(label="Detected key")
                 progression_output = gr.Markdown()
+                audio_output = gr.Audio(label="Playback", type="filepath")
                 json_output = gr.File(label="Download progression (JSON)")
                 midi_output = gr.File(label="Download MIDI")
+                mp3_output = gr.File(label="Download audio (MP3)")
 
         demo_btn.click(fn=_demo_melody_text, outputs=melody_input)
         generate_btn.click(
             fn=generate,
             inputs=[melody_input, creativity, use_phrases, rhythm],
-            outputs=[key_output, progression_output, json_output, midi_output],
+            outputs=[key_output, progression_output, audio_output,
+                     json_output, midi_output, mp3_output],
         )
 
     return demo
