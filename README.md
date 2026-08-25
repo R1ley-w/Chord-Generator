@@ -37,7 +37,7 @@ melody notes
 │   ├── __init__.py             # public API
 │   ├── app.py                  # JazzChordGeneratorApp (orchestration)
 │   ├── gradio_app.py           # Gradio web UI
-│   ├── audio.py                # MIDI rendering (midiutil)
+│   ├── audio.py                # MIDI + MP3 rendering (midiutil/FluidSynth)
 │   ├── chords.py               # JazzChord data model
 │   ├── markov_chain.py         # MarkovChain (training + prediction)
 │   ├── key_detector.py         # ScaleDetector, Key, ScaleType
@@ -46,8 +46,11 @@ melody notes
 │   ├── data_utils.py           # bundled sample progressions
 │   └── standard_finder.py      # jazz standards scraper / parser / trainer
 ├── data/
-│   └── trained_jazz_model.json # pre-trained Markov model (4136 states)
-├── requirements.txt            # runtime deps (numpy + gradio)
+│   ├── trained_jazz_model.json # pre-trained Markov model (4136 states)
+│   └── soundfonts/             # SoundFont(s) for MP3 synthesis (gitignored)
+├── scripts/
+│   └── download_soundfont.sh   # fetch a GM SoundFont for playback
+├── requirements.txt            # runtime deps
 ├── requirements-scrape.txt     # optional: scraping/training deps
 └── README.md
 ```
@@ -60,9 +63,31 @@ Requires Python 3.8+.
 pip install -r requirements.txt
 ```
 
-The core runtime needs only `numpy` and `gradio`. The optional
-`requirements-scrape.txt` (`requests`, `beautifulsoup4`) is only needed to
-scrape jazz standards online when training a brand-new model.
+The core runtime needs `numpy`, `gradio`, `midiutil`, and `midi2audio`. The
+optional `requirements-scrape.txt` (`requests`, `beautifulsoup4`) is only needed
+to scrape jazz standards online when training a brand-new model.
+
+### Audio playback (MP3)
+
+In-browser playback synthesizes MP3 from the generated MIDI using FluidSynth, so
+it needs two extra things:
+
+1. **FluidSynth** — a system package, not a pip package:
+   - macOS: `brew install fluid-synth`
+   - Debian/Ubuntu: `sudo apt install fluidsynth`
+2. **An MP3 encoder** — `lame` (or `ffmpeg`):
+   - macOS: `brew install lame`
+   - Debian/Ubuntu: `sudo apt install lame`
+3. **A SoundFont** — download one with the bundled helper:
+
+   ```bash
+   ./scripts/download_soundfont.sh
+   ```
+
+   The app looks for a SoundFont in `data/soundfonts/`, the
+   `CHORD_GENERATOR_SOUNDFONT` environment variable, or
+   `~/.fluidsynth/default_sound_font.sf2`. Without one, playback is skipped but
+   JSON/MIDI download still works.
 
 ## Usage
 
@@ -76,11 +101,11 @@ This opens a Gradio interface in your browser where you can:
 
 - paste or type a melody (one note per line: `pitch start_beat duration`),
 - pick a creativity level and rhythm style,
-- generate the chord progression and download it as JSON and as a playable MIDI
-  file (voiced chords, rendered with `midiutil`).
+- generate the chord progression and **play it back** as MP3, and download it as
+  JSON, MIDI, or MP3.
 
-The MIDI rendering lives in `chord_generator/audio.py`
-(`render_progression_to_midi`), so it can be reused outside the web app too.
+The rendering lives in `chord_generator/audio.py` (`render_progression_to_midi`
+and `render_midi_to_mp3`), so it can be reused outside the web app too.
 
 ### Run the demo
 
