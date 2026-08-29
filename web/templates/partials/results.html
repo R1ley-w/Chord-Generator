@@ -1,0 +1,33 @@
+<section class="panel results-panel">
+  <div class="results-head">
+    <h2>Generated progression</h2>
+    <div class="results-meta">
+      <span class="pill">Key: {{ key }}</span>
+      <span class="pill">Rhythm: {{ rhythm }}</span>
+    </div>
+  </div>
+
+  {% if audio_url %}
+  <div class="audio-row">
+    <audio controls src="{{ audio_url }}" preload="none"></audio>
+    <a class="btn btn-ghost" href="{{ audio_url }}" download>Download audio</a>
+  </div>
+  {% else %}
+  <p class="hint">Playback unavailable. Install FluidSynth and a SoundFont to enable MP3 audio.</p>
+  {% endif %}
+
+  <ol class="chord-list">
+    {% for row in chords %}
+    <li class="chord-row">
+      <span class="chord-symbol">{{ row.chord }}</span>
+      <span class="chord-time">bar {{ row.bar }}, beat {{ "%.0f"|format(row.beat) }}</span>
+      <span class="chord-dur">{{ "%.1f"|format(row.duration) }} beats</span>
+    </li>
+    {% endfor %}
+  </ol>
+
+  <div class="downloads">
+    <a class="btn btn-ghost" href="{{ json_url }}" download>Download JSON</a>
+    <a class="btn btn-ghost" href="{{ midi_url }}" download>Download MIDI</a>
+  </div>
+</section>

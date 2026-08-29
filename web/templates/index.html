@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Generator | Jazz Chord Generator{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Turn a melody into jazz harmony</h1>
+  <p class="tagline">
+    Enter a sequence of notes and this tool generates a jazz chord progression
+    that harmonizes it, with a creativity level you control.
+  </p>
+</section>
+
+<form id="generator-form" hx-post="/generate" hx-target="#results" hx-swap="innerHTML" hx-indicator="#spinner">
+  <div class="panel">
+    <div class="panel-heading">
+      <h2>Melody</h2>
+      <div class="panel-actions">
+        <button type="button" id="demo-btn" class="btn btn-ghost">Load demo</button>
+        <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
+      </div>
+    </div>
+
+    <div class="grid-scroll">
+      <div id="note-grid" class="note-grid" aria-label="Melody note grid"></div>
+    </div>
+
+    <label class="field-label" for="melody">Notes (one per line: pitch start duration)</label>
+    <textarea id="melody" name="melody" rows="6" spellcheck="false"
+              placeholder="C4 0.0 1.0&#10;E4 1.0 1.0&#10;G4 2.0 2.0&#10;B4 4.0 1.0"></textarea>
+    <p class="hint">Pitch uses note names like C4 or Eb5. Start and duration are in beats.</p>
+  </div>
+
+  <div class="panel controls">
+    <div class="control">
+      <label class="field-label" for="creativity">Creativity</label>
+      <select id="creativity" name="creativity">
+        <option value="CONSERVATIVE">Conservative</option>
+        <option value="BALANCED" selected>Balanced</option>
+        <option value="CREATIVE">Creative</option>
+        <option value="EXPERIMENTAL">Experimental</option>
+      </select>
+    </div>
+
+    <div class="control">
+      <label class="field-label" for="rhythm">Rhythm</label>
+      <select id="rhythm" name="rhythm">
+        <option value="swing" selected>Swing</option>
+        <option value="bossa_nova">Bossa nova</option>
+        <option value="ballad">Ballad</option>
+        <option value="latin">Latin</option>
+        <option value="funk">Funk</option>
+      </select>
+    </div>
+
+    <div class="control control-check">
+      <label class="check">
+        <input type="checkbox" name="use_phrases" value="true" checked>
+        <span>Use phrase analysis</span>
+      </label>
+    </div>
+
+    <div class="control control-submit">
+      <button type="submit" class="btn btn-primary">Generate chords</button>
+      <span id="spinner" class="htmx-indicator spinner" aria-hidden="true"></span>
+    </div>
+  </div>
+</form>
+
+<section id="results" class="results" aria-live="polite"></section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/app.js" defer></script>
+{% endblock %}

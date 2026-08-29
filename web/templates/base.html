@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Jazz Chord Generator{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/htmx.min.js" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">Jazz Chord Generator</a>
+    <nav>
+      <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>Generator</a>
+      <a href="/guide" {% if request.url.path == '/guide' %}aria-current="page"{% endif %}>Guide</a>
+      <a href="/license" {% if request.url.path == '/license' %}aria-current="page"{% endif %}>License</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <span>Free and open source under the MIT license.</span>
+    <a href="/license">View license</a>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

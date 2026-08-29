@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Guide | Jazz Chord Generator{% endblock %}
+
+{% block content %}
+<section class="doc">
+  <h1>Usage guide</h1>
+
+  <h2>Getting started</h2>
+  <p>
+    Open the <a href="/">generator</a>, enter a melody, pick a creativity level,
+    then press Generate chords. You will get a chord progression that fits your
+    melody, along with a key and downloadable JSON, MIDI, and audio files.
+  </p>
+
+  <h2>Entering a melody</h2>
+  <p>There are two ways to enter notes, and they stay in sync.</p>
+
+  <h3>The note grid</h3>
+  <p>
+    Rows are pitches and columns are beats. Click a cell to place a one beat note
+    at that pitch and time, and click it again to remove it. The grid updates the
+    text box below it automatically.
+  </p>
+
+  <h3>The text box</h3>
+  <p>
+    Write one note per line as pitch, start beat, and duration. For example:
+  </p>
+  <pre class="code">C4 0.0 1.0
+E4 1.0 1.0
+G4 2.0 2.0
+B4 4.0 1.0</pre>
+  <p>
+    Pitch is a note name like C4 or Eb5. Start and duration are measured in
+    beats, so a duration of 1.0 is a quarter note. If you leave them out, notes
+    are placed one beat apart.
+  </p>
+
+  <h2>Creativity levels</h2>
+  <table class="table">
+    <thead>
+      <tr><th>Level</th><th>Behavior</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Conservative</td><td>Deterministic and strictly diatonic chords.</td></tr>
+      <tr><td>Balanced</td><td>Mostly diatonic with occasional tensions.</td></tr>
+      <tr><td>Creative</td><td>Chromatic freedom and frequent tensions.</td></tr>
+      <tr><td>Experimental</td><td>Exploratory sampling, tritone substitutions, heavy color.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>How it works</h2>
+  <p>
+    The generator detects the key of your melody, finds phrase boundaries, and
+    proposes chords with a Markov chain trained on jazz standards. It then snaps
+    chords toward the key, adds harmonic color, and checks each chord against the
+    melody note before returning the result.
+  </p>
+
+  <h2>Enabling audio playback</h2>
+  <p>
+    MP3 playback is synthesized from MIDI using FluidSynth. It needs FluidSynth
+    and an MP3 encoder installed on your machine, plus a SoundFont. See the
+    project README for setup steps. Without those, the JSON and MIDI downloads
+    still work.
+  </p>
+</section>
+{% endblock %}
