@@ -90,17 +90,17 @@ def _chord_rows(app: JazzChordGeneratorApp) -> list[dict]:
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    return TEMPLATES.TemplateResponse("index.html", {"request": request})
+    return TEMPLATES.TemplateResponse(request, "index.html")
 
 
 @app.get("/guide", response_class=HTMLResponse)
 def guide(request: Request):
-    return TEMPLATES.TemplateResponse("guide.html", {"request": request})
+    return TEMPLATES.TemplateResponse(request, "guide.html")
 
 
 @app.get("/license", response_class=HTMLResponse)
 def license_page(request: Request):
-    return TEMPLATES.TemplateResponse("license.html", {"request": request})
+    return TEMPLATES.TemplateResponse(request, "license.html")
 
 
 @app.get("/demo-melody")
@@ -165,7 +165,6 @@ def generate(
             print(f"[audio] synthesis failed: {exc}")
 
         context = {
-            "request": request,
             "key": str(app_instance.current_key),
             "rhythm": style.value,
             "chords": _chord_rows(app_instance),
@@ -174,7 +173,7 @@ def generate(
             "audio_url": f"/files/{token}/{audio_name}" if audio_name else None,
         }
 
-    return TEMPLATES.TemplateResponse("partials/results.html", context)
+    return TEMPLATES.TemplateResponse(request, "partials/results.html", context)
 
 
 @app.get("/files/{token}/{name}")
