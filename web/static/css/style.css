@@ -1,15 +1,12 @@
 :root {
-  --lavender: #dcd6f7;
-  --lavender-soft: #ece7fb;
-  --blush: #f8dce6;
-  --blush-soft: #fbeef3;
-  --mint: #d3efe3;
-  --mint-soft: #e9f8f1;
-  --peach: #fbe4d0;
-  --ink: #3b3f52;
-  --ink-soft: #5c6070;
-  --line: #e4dcee;
-  --surface: #fffdfe;
+  --bg: #f7f6fa;
+  --surface: #ffffff;
+  --accent: #8b7ac9;
+  --accent-dark: #7562b8;
+  --accent-soft: #ece9f6;
+  --ink: #2f3140;
+  --ink-soft: #6b6d7a;
+  --line: #e5e3ee;
   --radius: 14px;
 }
 
@@ -25,13 +22,13 @@ html, body {
 body {
   font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
   color: var(--ink);
-  background: #f6f3fb;
+  background: var(--bg);
   min-height: 100vh;
   line-height: 1.55;
 }
 
 a {
-  color: #6b5c9e;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -47,7 +44,7 @@ a:hover {
   justify-content: space-between;
   padding: 20px 28px;
   border-bottom: 1px solid var(--line);
-  background: var(--lavender-soft);
+  background: var(--accent-soft);
 }
 
 .brand {
@@ -70,7 +67,7 @@ a:hover {
 
 .site-header nav a[aria-current="page"] {
   color: var(--ink);
-  border-bottom: 2px solid #b9a7e6;
+  border-bottom: 2px solid var(--accent);
 }
 
 /* Layout */
@@ -89,7 +86,7 @@ a:hover {
 .hero h1 {
   font-size: 2rem;
   margin: 0 0 10px;
-  color: #6b5c9e;
+  color: var(--accent);
 }
 
 .tagline {
@@ -142,7 +139,7 @@ textarea, select {
   font-family: inherit;
   font-size: 0.95rem;
   color: var(--ink);
-  background: #fcfbfe;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 12px;
@@ -156,7 +153,7 @@ textarea {
 
 textarea:focus, select:focus {
   outline: none;
-  border-color: #b9a7e6;
+  border-color: var(--accent);
 }
 
 .hint {
@@ -220,12 +217,12 @@ textarea:focus, select:focus {
 
 .btn-primary {
   color: #fff;
-  background: #8b7ac9;
+  background: var(--accent);
 }
 
 .btn-ghost {
   color: var(--ink);
-  background: var(--lavender-soft);
+  background: var(--accent-soft);
   border-color: var(--line);
 }
 
@@ -242,7 +239,7 @@ textarea:focus, select:focus {
   display: grid;
   min-width: 640px;
   grid-template-columns: 52px repeat(var(--beats, 32), minmax(18px, 1fr));
-  background: #fbfaff;
+  background: var(--surface);
 }
 
 .grid-label, .grid-beat-header, .grid-cell {
@@ -256,8 +253,8 @@ textarea:focus, select:focus {
   padding-right: 8px;
   font-size: 0.72rem;
   color: var(--ink-soft);
-  border-bottom: 1px solid #f0eaf7;
-  border-right: 1px solid #f0eaf7;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
   user-select: none;
 }
 
@@ -267,28 +264,28 @@ textarea:focus, select:focus {
   justify-content: center;
   font-size: 0.66rem;
   color: var(--ink-soft);
-  border-bottom: 1px solid #f0eaf7;
-  border-right: 1px solid #f0eaf7;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
   user-select: none;
 }
 
 .grid-cell {
-  border-right: 1px solid #f0eaf7;
-  border-bottom: 1px solid #f0eaf7;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   cursor: pointer;
   transition: background 0.12s ease;
 }
 
 .grid-cell:hover {
-  background: var(--mint-soft);
+  background: var(--accent-soft);
 }
 
 .grid-cell.on {
-  background: #b7a5ec;
+  background: var(--accent);
 }
 
 .grid-cell.on:hover {
-  background: #a390e0;
+  background: var(--accent-dark);
 }
 
 /* Results */
@@ -320,7 +317,7 @@ textarea:focus, select:focus {
   font-size: 0.8rem;
   padding: 4px 12px;
   border-radius: 999px;
-  background: var(--mint-soft);
+  background: var(--accent-soft);
   border: 1px solid var(--line);
   color: var(--ink-soft);
 }
@@ -348,13 +345,13 @@ textarea:focus, select:focus {
   align-items: baseline;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid #f0eaf7;
+  border-bottom: 1px solid var(--line);
 }
 
 .chord-symbol {
   font-weight: 700;
   font-size: 1.05rem;
-  color: #6b5c9e;
+  color: var(--accent);
   min-width: 96px;
 }
 
@@ -379,7 +376,7 @@ textarea:focus, select:focus {
   width: 18px;
   height: 18px;
   border: 2px solid var(--line);
-  border-top-color: #a28ee0;
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -428,7 +425,7 @@ textarea:focus, select:focus {
 }
 
 .code {
-  background: var(--lavender-soft);
+  background: var(--accent-soft);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 12px 16px;
@@ -447,11 +444,11 @@ textarea:focus, select:focus {
 .table th, .table td {
   text-align: left;
   padding: 10px 14px;
-  border-bottom: 1px solid #f0eaf7;
+  border-bottom: 1px solid var(--line);
 }
 
 .table th {
-  background: var(--lavender-soft);
+  background: var(--accent-soft);
   font-size: 0.85rem;
 }
 
@@ -470,7 +467,7 @@ textarea:focus, select:focus {
   border-top: 1px solid var(--line);
   color: var(--ink-soft);
   font-size: 0.82rem;
-  background: var(--mint-soft);
+  background: var(--accent-soft);
 }
 
 @media (max-width: 640px) {
