@@ -32,7 +32,7 @@ melody notes
 ```
 .
 ├── main.py                     # CLI entry point (demo / interactive)
-├── webapp.py                   # web app entry point (Gradio)
+├── webapp.py                   # Gradio web UI entry point
 ├── chord_generator/            # the source package
 │   ├── __init__.py             # public API
 │   ├── app.py                  # JazzChordGeneratorApp (orchestration)
@@ -45,11 +45,17 @@ melody notes
 │   ├── melody_generator.py     # MelodyGenerator
 │   ├── data_utils.py           # bundled sample progressions
 │   └── standard_finder.py      # jazz standards scraper / parser / trainer
+├── web/                        # FastAPI + HTMX web application
+│   ├── app.py                  # FastAPI app and routes
+│   ├── templates/              # HTML templates (base, index, guide, license)
+│   └── static/                 # CSS, JS, vendored htmx
 ├── data/
 │   ├── trained_jazz_model.json # pre-trained Markov model (4136 states)
 │   └── soundfonts/             # SoundFont(s) for MP3 synthesis (gitignored)
 ├── scripts/
 │   └── download_soundfont.sh   # fetch a GM SoundFont for playback
+├── Dockerfile                  # containerized web app
+├── LICENSE                     # MIT
 ├── requirements.txt            # runtime deps
 ├── requirements-scrape.txt     # optional: scraping/training deps
 └── README.md
@@ -93,19 +99,41 @@ it needs two extra things:
 
 ### Web app (recommended)
 
+The FastAPI + HTMX app serves a custom interface with a clickable note grid and
+a text input, plus guide and license pages.
+
+```bash
+uvicorn web.app:app --reload
+```
+
+Then open http://127.0.0.1:8000 in your browser.
+
+You can:
+
+- enter a melody on the note grid or as text (one note per line:
+  `pitch start_beat duration`),
+- pick a creativity level and rhythm style,
+- generate the chord progression and play it back as MP3, and download it as
+  JSON, MIDI, or MP3.
+
+### Run with Docker
+
+```bash
+docker build -t chord-generator .
+docker run -p 8000:8000 chord-generator
+```
+
+The image installs FluidSynth, `lame`, and a GM SoundFont, so MP3 playback works
+out of the box.
+
+### Gradio app (alternative)
+
 ```bash
 python webapp.py
 ```
 
-This opens a Gradio interface in your browser where you can:
-
-- paste or type a melody (one note per line: `pitch start_beat duration`),
-- pick a creativity level and rhythm style,
-- generate the chord progression and **play it back** as MP3, and download it as
-  JSON, MIDI, or MP3.
-
-The rendering lives in `chord_generator/audio.py` (`render_progression_to_midi`
-and `render_midi_to_mp3`), so it can be reused outside the web app too.
+This opens the older Gradio interface with the same generation and playback
+features.
 
 ### Run the demo
 
