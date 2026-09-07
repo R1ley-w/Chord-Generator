@@ -93,11 +93,6 @@ def index(request: Request):
     return TEMPLATES.TemplateResponse(request, "index.html")
 
 
-@app.get("/guide", response_class=HTMLResponse)
-def guide(request: Request):
-    return TEMPLATES.TemplateResponse(request, "guide.html")
-
-
 @app.get("/license", response_class=HTMLResponse)
 def license_page(request: Request):
     return TEMPLATES.TemplateResponse(request, "license.html")

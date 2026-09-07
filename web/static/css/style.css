@@ -25,8 +25,7 @@ html, body {
 body {
   font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
   color: var(--ink);
-  background: linear-gradient(160deg, #f4f0ff 0%, #fdeef4 48%, #eaf8f1 100%);
-  background-attachment: fixed;
+  background: #f6f3fb;
   min-height: 100vh;
   line-height: 1.55;
 }
@@ -48,7 +47,7 @@ a:hover {
   justify-content: space-between;
   padding: 20px 28px;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(90deg, var(--lavender-soft), var(--blush-soft), var(--mint-soft));
+  background: var(--lavender-soft);
 }
 
 .brand {
@@ -90,10 +89,7 @@ a:hover {
 .hero h1 {
   font-size: 2rem;
   margin: 0 0 10px;
-  background: linear-gradient(90deg, #7a6bb0, #b06d8c);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #6b5c9e;
 }
 
 .tagline {
@@ -224,7 +220,7 @@ textarea:focus, select:focus {
 
 .btn-primary {
   color: #fff;
-  background: linear-gradient(90deg, #a28ee0, #c48bb0);
+  background: #8b7ac9;
 }
 
 .btn-ghost {
@@ -288,11 +284,11 @@ textarea:focus, select:focus {
 }
 
 .grid-cell.on {
-  background: linear-gradient(180deg, #bca8ee, #c48bb0);
+  background: #b7a5ec;
 }
 
 .grid-cell.on:hover {
-  background: linear-gradient(180deg, #a98fe6, #bd79a3);
+  background: #a390e0;
 }
 
 /* Results */
@@ -474,7 +470,7 @@ textarea:focus, select:focus {
   border-top: 1px solid var(--line);
   color: var(--ink-soft);
   font-size: 0.82rem;
-  background: linear-gradient(90deg, var(--mint-soft), var(--lavender-soft));
+  background: var(--mint-soft);
 }
 
 @media (max-width: 640px) {
