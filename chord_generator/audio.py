@@ -1,6 +1,7 @@
 """Render chord progressions to MIDI and to audio (MP3 via FluidSynth)."""
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -41,6 +42,17 @@ def _pitch_class(root: str) -> int:
     return _NOTE_TO_PC.get(root, 0)
 
 
+def _pitch_to_midi(pitch: str):
+    """Convert a note string like 'C4' or 'Eb5' to a MIDI note number."""
+    match = re.match(r'^([A-G][#b]?)(-?\d+)$', pitch)
+    if not match:
+        return None
+    pc = _NOTE_TO_PC.get(match.group(1))
+    if pc is None:
+        return None
+    return (int(match.group(2)) + 1) * 12 + pc
+
+
 def _chord_notes(chord: JazzChord) -> List[int]:
     """Return the MIDI notes for a simple voicing of a chord."""
     root_pc = _pitch_class(chord.root)
@@ -58,15 +70,19 @@ def _chord_notes(chord: JazzChord) -> List[int]:
     return notes
 
 
-def render_progression_to_midi(progression, filepath: str,
+def render_progression_to_midi(progression, filepath: str, melody=None,
                                tempo: int = 120, program: int = 0,
-                               volume: int = 100) -> str:
+                               melody_program: int = 73, volume: int = 100) -> str:
     """Write a progression of ``ChordWithDuration`` objects to a MIDI file.
 
     Each chord is voiced (bass + closed-position chord tones + extensions) and
-    held for its full duration. Returns ``filepath``.
+    held for its full duration. When ``melody`` is given (a list of ``Note``
+    objects), it is added as a second track. Returns ``filepath``.
     """
-    midi = MIDIFile(1)
+    num_tracks = 2 if melody else 1
+    midi = MIDIFile(num_tracks)
+
+    # Chord track
     track = 0
     channel = 0
     midi.addTempo(track, 0, tempo)
@@ -75,6 +91,15 @@ def render_progression_to_midi(progression, filepath: str,
     for item in progression:
         for pitch in _chord_notes(item.chord):
             midi.addNote(track, channel, pitch, item.start_beat, item.duration, volume)
+
+    # Melody track
+    if melody:
+        melody_track = 1
+        midi.addProgramChange(melody_track, channel, 0, melody_program)
+        for note in melody:
+            pitch = _pitch_to_midi(note.pitch)
+            if pitch is not None:
+                midi.addNote(melody_track, channel, pitch, note.start_beat, note.duration, volume)
 
     with open(filepath, 'wb') as f:
         midi.writeFile(f)

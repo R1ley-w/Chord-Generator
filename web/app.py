@@ -115,6 +115,7 @@ def generate(
     creativity: str = Form("BALANCED"),
     rhythm: str = Form("swing"),
     use_phrases: str = Form("false"),
+    include_melody: str = Form("false"),
 ):
     notes = parse_melody_text(melody)
     if not notes:
@@ -149,7 +150,12 @@ def generate(
         app_instance.export_progression(str(json_path))
 
         midi_path = token_dir / "progression.mid"
-        render_progression_to_midi(app_instance.current_progression, str(midi_path))
+        melody_for_render = notes if include_melody.lower() in {"true", "1", "on", "yes"} else None
+        render_progression_to_midi(
+            app_instance.current_progression,
+            str(midi_path),
+            melody=melody_for_render,
+        )
 
         audio_name = None
         try:
