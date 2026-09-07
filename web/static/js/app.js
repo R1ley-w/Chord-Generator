@@ -12,6 +12,7 @@
   var textEl = document.getElementById("melody");
   var demoBtn = document.getElementById("demo-btn");
   var clearBtn = document.getElementById("clear-btn");
+  var playBtn = document.getElementById("play-btn");
 
   if (!gridEl || !textEl) {
     return;
@@ -20,6 +21,51 @@
   // notes: [{ pitch: int (midi), start: number, duration: number }]
   var notes = [];
   var editingText = false;
+
+  var SECONDS_PER_BEAT = 0.5; // 120 BPM
+  var audioCtx = null;
+
+  function getAudioContext() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
+
+  function midiToFreq(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  function playNote(midi, durationSeconds, whenSeconds) {
+    var ctx = getAudioContext();
+    var t0 = ctx.currentTime + (whenSeconds || 0);
+    var end = Math.max(durationSeconds || 0.2, 0.1);
+
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = midiToFreq(midi);
+
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.3, t0 + 0.02);
+    gain.gain.setValueAtTime(0.3, Math.max(t0 + 0.02, t0 + end - 0.05));
+    gain.gain.linearRampToValueAtTime(0, t0 + end);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + end + 0.05);
+  }
+
+  function playMelody() {
+    for (var i = 0; i < notes.length; i++) {
+      var note = notes[i];
+      playNote(note.pitch, note.duration * SECONDS_PER_BEAT, note.start * SECONDS_PER_BEAT);
+    }
+  }
 
   function midiToName(midi) {
     return PITCH_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
@@ -168,6 +214,7 @@
       notes.splice(index, 1);
     } else {
       notes.push({ pitch: midi, start: beat, duration: 1 });
+      playNote(midi, 0.25, 0);
     }
 
     renderGrid();
@@ -183,6 +230,9 @@
 
   if (demoBtn) {
     demoBtn.addEventListener("click", loadDemo);
+  }
+  if (playBtn) {
+    playBtn.addEventListener("click", playMelody);
   }
   if (clearBtn) {
     clearBtn.addEventListener("click", function () {
