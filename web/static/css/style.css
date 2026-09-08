@@ -1,13 +1,13 @@
 :root {
-  --bg: #f7f6fa;
+  --bg: #fdf5f7;
   --surface: #ffffff;
-  --accent: #8b7ac9;
-  --accent-dark: #7562b8;
-  --accent-soft: #ece9f6;
-  --ink: #2f3140;
-  --ink-soft: #6b6d7a;
-  --line: #e5e3ee;
-  --radius: 14px;
+  --accent: #d96688;
+  --accent-dark: #c45477;
+  --accent-soft: #fbe4ec;
+  --ink: #3a2f33;
+  --ink-soft: #766469;
+  --line: #f1d9e1;
+  --radius: 0px;
 }
 
 * {
@@ -141,7 +141,7 @@ textarea, select {
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 10px 12px;
 }
 
@@ -231,7 +231,7 @@ textarea:focus, select:focus {
 .grid-scroll {
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 0;
   margin-bottom: 16px;
 }
 
@@ -427,7 +427,7 @@ textarea:focus, select:focus {
 .code {
   background: var(--accent-soft);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 12px 16px;
   font-size: 0.9rem;
   overflow-x: auto;
@@ -437,7 +437,7 @@ textarea:focus, select:focus {
   width: 100%;
   border-collapse: collapse;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
 }
 
