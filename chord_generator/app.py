@@ -265,32 +265,53 @@ class JazzChordGeneratorApp:
 
         return self._colorize_chord(chord, key, creativity)
 
-    _TENSION_POOL = {
-        "maj7": ["9", "#11", "13"],
+    _SAFE_TENSIONS = {
+        "maj7": ["9", "13"],
         "m7": ["9", "11"],
-        "7": ["b9", "9", "#9", "#11", "13", "b13"],
-        "m7b5": ["9", "11", "b13"],
+        "7": ["9", "13"],
+        "m7b5": ["11"],
+        "dim7": [],
+    }
+
+    _ALTERED_TENSIONS = {
+        "maj7": ["#11"],
+        "m7": [],
+        "7": ["b9", "#9", "#11", "b13"],
+        "m7b5": ["b13"],
         "dim7": [],
     }
 
     def _colorize_chord(self, chord: JazzChord, key: Key, creativity: float) -> JazzChord:
         """Add harmonic color (tensions, tritone substitutions) proportional to
-        creativity. This is what makes high creativity produce more complex
-        chords, since temperature alone can only reweight existing candidates."""
-        colored = JazzChord(chord.root, chord.quality, list(chord.extensions))
+        creativity.
+
+        Starts from a clean chord (dropping any extensions inherited from the
+        model) so lower creativity levels stay simple, then adds a controlled
+        number of tensions: one safe tension (9/11/13) with probability
+        ``creativity``, and one altered tension (b9/#9/#11/b13) only at high
+        creativity.
+        """
+        colored = JazzChord(chord.root, chord.quality, [])
 
         # Tritone substitution only for the dominant seventh built on the key's
         # fifth degree (V7 -> bII7), the classic jazz substitution.
-        if self._is_v7_of_key(colored, key) and random.random() < creativity * 0.5:
+        if self._is_v7_of_key(colored, key) and random.random() < creativity * 0.4:
             root_index = self.scale_detector.note_indices.get(colored.root, 0)
             sub_root = self.scale_detector.index_notes[(root_index + 6) % 12]
-            colored = JazzChord(sub_root, "7", colored.extensions)
+            colored = JazzChord(sub_root, "7", [])
 
-        # Add tensions from the pool for this quality
-        for tension in self._TENSION_POOL.get(colored.quality, ["9"]):
-            if random.random() < creativity and tension not in colored.extensions:
-                colored.extensions.append(tension)
+        safe = self._SAFE_TENSIONS.get(colored.quality, [])
+        altered = self._ALTERED_TENSIONS.get(colored.quality, [])
 
+        tensions = []
+        if safe and random.random() < creativity:
+            tensions.append(random.choice(safe))
+        if altered and creativity >= 0.6 and random.random() < (creativity - 0.6) / 0.4:
+            tension = random.choice(altered)
+            if tension not in tensions:
+                tensions.append(tension)
+
+        colored.extensions = tensions
         return colored
 
     def _is_v7_of_key(self, chord: JazzChord, key: Key) -> bool:
