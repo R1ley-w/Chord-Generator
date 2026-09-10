@@ -4,20 +4,16 @@ Generate a jazz chord progression that harmonizes any melody. A Markov chain
 trained on jazz standards proposes chords, which key detection, phrase analysis,
 and a creativity level then shape.
 
-## Quick start
+## Use the tool
 
-```bash
-pip install -r requirements.txt
-uvicorn web.app:app --reload
-```
-
-Open http://127.0.0.1:8000. Enter a melody on the note grid or as text, pick a
+Open http://jazzchordgen.com. Enter a melody on the note grid or as text, pick a
 creativity level, and generate. You can preview the melody, then download the
 result as JSON, MIDI, or MP3.
 
-Or run with Docker:
+Or run it yourself with Docker:
 
 ```bash
+git clone https://github.com/R1ley-w/Chord-Generator
 docker build -t chord-generator .
 docker run -p 8000:8000 chord-generator
 ```
