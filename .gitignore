@@ -10,3 +10,4 @@ data/jazz_standards/
 data/soundfonts/
 data/generated/
 jazz_progression*.json
+.env
