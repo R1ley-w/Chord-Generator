@@ -42,6 +42,8 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   padding: 20px 28px;
   border-bottom: 1px solid var(--line);
   background: var(--accent-soft);
@@ -56,6 +58,7 @@ a:hover {
 
 .site-header nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 22px;
 }
 
@@ -119,6 +122,7 @@ a:hover {
 
 .panel-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -208,6 +212,7 @@ textarea:focus, select:focus {
   border: 1px solid transparent;
   padding: 10px 20px;
   cursor: pointer;
+  white-space: nowrap;
   transition: transform 0.15s ease, background 0.15s ease;
 }
 
@@ -471,12 +476,88 @@ textarea:focus, select:focus {
 }
 
 @media (max-width: 640px) {
+  .container {
+    padding: 22px 14px 48px;
+  }
+
   .site-header {
     flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
   }
+
+  .site-header nav {
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .panel-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .panel-actions {
+    width: 100%;
+  }
+
+  .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 12px 14px;
+  }
+
   .controls {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .control {
+    flex: 1 1 auto;
+  }
+
+  .control-submit .btn {
+    width: 100%;
+  }
+
+  .audio-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .audio-row audio {
+    width: 100%;
+  }
+
+  .results-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chord-row {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+
+  .chord-symbol {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .grid-label, .grid-beat-header, .grid-cell {
+    min-height: 28px;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    text-align: center;
   }
 }
