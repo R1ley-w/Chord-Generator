@@ -1,7 +1,6 @@
 """Render chord progressions to MIDI and to audio (MP3 via FluidSynth)."""
 
 import os
-import re
 import shutil
 import subprocess
 import tempfile
@@ -12,12 +11,7 @@ from midi2audio import DEFAULT_SOUND_FONT, FluidSynth
 from midiutil import MIDIFile
 
 from .chords import JazzChord
-
-_NOTE_TO_PC = {
-    'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4,
-    'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9,
-    'A#': 10, 'Bb': 10, 'B': 11,
-}
+from .notes import NOTE_TO_PC, pitch_to_midi
 
 _CHORD_TONES = {
     'maj7': [0, 4, 7, 11],
@@ -38,24 +32,9 @@ _CHORD_OCTAVE = 4
 _EXTENSION_OCTAVE = 5
 
 
-def _pitch_class(root: str) -> int:
-    return _NOTE_TO_PC.get(root, 0)
-
-
-def _pitch_to_midi(pitch: str):
-    """Convert a note string like 'C4' or 'Eb5' to a MIDI note number."""
-    match = re.match(r'^([A-G][#b]?)(-?\d+)$', pitch)
-    if not match:
-        return None
-    pc = _NOTE_TO_PC.get(match.group(1))
-    if pc is None:
-        return None
-    return (int(match.group(2)) + 1) * 12 + pc
-
-
 def _chord_notes(chord: JazzChord) -> List[int]:
     """Return the MIDI notes for a simple voicing of a chord."""
-    root_pc = _pitch_class(chord.root)
+    root_pc = NOTE_TO_PC.get(chord.root, 0)
 
     notes = [(_BASS_OCTAVE + 1) * 12 + root_pc]
 
@@ -97,7 +76,7 @@ def render_progression_to_midi(progression, filepath: str, melody=None,
         melody_track = 1
         midi.addProgramChange(melody_track, channel, 0, melody_program)
         for note in melody:
-            pitch = _pitch_to_midi(note.pitch)
+            pitch = pitch_to_midi(note.pitch)
             if pitch is not None:
                 midi.addNote(melody_track, channel, pitch, note.start_beat, note.duration, volume)
 

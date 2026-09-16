@@ -3,25 +3,13 @@ from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
 
+from .notes import Note, pitch_to_midi
+
 class BeatStrength(Enum):
     STRONG = 3
     MEDIUM = 2
     WEAK = 1
     VERY_WEAK = 0
-
-@dataclass
-class Note:
-    pitch: str  # e.g., "C4", "Eb5"
-    start_beat: float  # Beat position where note starts
-    duration: float  # Duration in beats
-    velocity: int = 80  # Note intensity (0-127)
-    
-    @property
-    def end_beat(self) -> float:
-        return self.start_beat + self.duration
-    
-    def __str__(self):
-        return f"{self.pitch} (beat {self.start_beat:.1f}, dur {self.duration:.1f})"
 
 @dataclass
 class Phrase:
@@ -240,8 +228,8 @@ class PhraseAnalyzer:
             score += strength_score * weights['beat_strength']
             
             # Melodic emphasis (high or low notes in phrase)
-            pitches = [self._pitch_to_midi(n.pitch) for n in notes]
-            current_pitch = self._pitch_to_midi(note.pitch)
+            pitches = [pitch_to_midi(n.pitch) for n in notes]
+            current_pitch = pitch_to_midi(note.pitch)
             
             if max(pitches) == current_pitch or min(pitches) == current_pitch:
                 score += weights['melodic_emphasis']
@@ -253,21 +241,6 @@ class PhraseAnalyzer:
         num_important = max(2, len(notes) // 3)
         
         return [note for note, score in note_scores[:num_important]]
-    
-    def _pitch_to_midi(self, pitch: str) -> int:
-        """Convert pitch string to MIDI note number (simplified)"""
-        pitch_map = {
-            'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
-            'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
-            'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
-        }
-        
-        # Simple parser for pitches like "C4", "Eb5", etc.
-        note_name = ''.join([c for c in pitch if not c.isdigit()])
-        octave = int(''.join([c for c in pitch if c.isdigit()]))
-        
-        note_value = pitch_map.get(note_name, 0)
-        return (octave + 1) * 12 + note_value
     
     def get_chord_change_points(self, phrases: List[Phrase]) -> List[float]:
         """

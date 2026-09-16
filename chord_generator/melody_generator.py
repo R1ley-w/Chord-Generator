@@ -3,7 +3,7 @@ from typing import List
 from dataclasses import dataclass
 
 from .chords import JazzChord
-from .phrase_analysis import Note
+from .notes import Note, midi_to_pitch, pitch_to_midi
 
 @dataclass
 class ChordTone:
@@ -145,7 +145,7 @@ class MelodyGenerator:
         
         previous_pitch = None
         if previous_note:
-            previous_pitch = self._pitch_to_midi(previous_note.pitch)
+            previous_pitch = pitch_to_midi(previous_note.pitch)
         
         for duration in rhythm_pattern:
             # Choose between chord tone and tension
@@ -162,7 +162,7 @@ class MelodyGenerator:
             actual_duration = duration * random.uniform(0.9, 1.1)
             
             note = Note(
-                pitch=self._midi_to_pitch(pitch),
+                pitch=midi_to_pitch(pitch),
                 start_beat=current_beat,
                 duration=actual_duration,
                 velocity=random.randint(70, 100)
@@ -239,27 +239,6 @@ class MelodyGenerator:
             
         return current_pitch
     
-    def _pitch_to_midi(self, pitch: str) -> int:
-        """Convert pitch string to MIDI note number"""
-        pitch_map = {
-            'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
-            'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
-            'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
-        }
-        
-        note_name = ''.join([c for c in pitch if not c.isdigit()])
-        octave = int(''.join([c for c in pitch if c.isdigit()]))
-        
-        note_value = pitch_map.get(note_name, 0)
-        return (octave + 1) * 12 + note_value
-    
-    def _midi_to_pitch(self, midi_note: int) -> str:
-        """Convert MIDI note number to pitch string"""
-        note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-        octave = (midi_note // 12) - 1
-        note_name = note_names[midi_note % 12]
-        return f"{note_name}{octave}"
-
 # Simplified version for immediate use
 def create_melody_for_progression(progression: List[JazzChord], 
                                 style: str = "bebop") -> List[Note]:

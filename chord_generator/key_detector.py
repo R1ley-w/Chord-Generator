@@ -6,7 +6,7 @@ from collections import Counter
 
 from .chords import JazzChord
 from .markov_chain import MarkovChain
-from .phrase_analysis import Note
+from .notes import NOTE_TO_PC, PC_TO_NOTE, Note, pitch_to_midi
 
 class ScaleType(Enum):
     MAJOR = "major"
@@ -33,19 +33,6 @@ class ScaleDetector:
     """Detects musical key and scale from a collection of notes"""
     
     def __init__(self):
-        # Note to index mapping
-        self.note_indices = {
-            'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
-            'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
-            'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
-        }
-        
-        # Index to note names (prefer sharps for some, flats for others)
-        self.index_notes = {
-            0: 'C', 1: 'C#', 2: 'D', 3: 'Eb', 4: 'E', 5: 'F',
-            6: 'F#', 7: 'G', 8: 'Ab', 9: 'A', 10: 'Bb', 11: 'B'
-        }
-        
         # Scale patterns (semitone intervals from tonic)
         self.scale_patterns = {
             ScaleType.MAJOR: [2, 2, 1, 2, 2, 2, 1],
@@ -100,7 +87,7 @@ class ScaleDetector:
         pitch_classes = []
         
         for note in notes:
-            midi_note = self._pitch_to_midi(note.pitch)
+            midi_note = pitch_to_midi(note.pitch)
             pitch_class = midi_note % 12
             
             # Weight by duration (longer notes are more important for key)
@@ -108,14 +95,6 @@ class ScaleDetector:
             pitch_classes.extend([pitch_class] * weight)
         
         return pitch_classes
-    
-    def _pitch_to_midi(self, pitch: str) -> int:
-        """Convert pitch string to MIDI note number"""
-        note_name = ''.join([c for c in pitch if not c.isdigit()])
-        octave = int(''.join([c for c in pitch if c.isdigit()]))
-        
-        note_value = self.note_indices.get(note_name, 0)
-        return (octave + 1) * 12 + note_value
     
     def _krumhansl_schmuckler(self, pitch_classes: List[int]) -> Key:
         """
@@ -157,7 +136,7 @@ class ScaleDetector:
         best_scale_type = self._apply_jazz_preferences(best_scale_type, best_key, pitch_classes)
         
         return Key(
-            tonic=self.index_notes[best_key],
+            tonic=PC_TO_NOTE[best_key],
             scale_type=best_scale_type,
             confidence=best_correlation
         )
@@ -240,7 +219,7 @@ class ScaleDetector:
         scale_type = self._apply_jazz_preferences(scale_type, most_common, pitch_classes)
         
         return Key(
-            tonic=self.index_notes[most_common],
+            tonic=PC_TO_NOTE[most_common],
             scale_type=scale_type,
             confidence=pc_counter[most_common] / len(pitch_classes)
         )
@@ -270,7 +249,7 @@ class ScaleDetector:
                     best_scale = scale_type
         
         return Key(
-            tonic=self.index_notes[best_key],
+            tonic=PC_TO_NOTE[best_key],
             scale_type=best_scale,
             confidence=best_correlation
         )
@@ -302,7 +281,7 @@ class ScaleDetector:
     def get_diatonic_chords(self, key: Key) -> List[JazzChord]:
         """Get all diatonic chords for a detected key"""
         scale_degrees = self.get_scale_degrees(
-            self.note_indices[key.tonic], 
+            NOTE_TO_PC[key.tonic], 
             key.scale_type
         )
         
@@ -311,7 +290,7 @@ class ScaleDetector:
         
         chords = []
         for i, degree in enumerate(scale_degrees[:7]):  # First 7 degrees
-            root = self.index_notes[degree]
+            root = PC_TO_NOTE[degree]
             quality = chord_qualities[i]
             chords.append(JazzChord(root, quality))
         
@@ -335,9 +314,9 @@ class ScaleDetector:
     
     def is_chord_in_key(self, chord: JazzChord, key: Key, strict: bool = False) -> bool:
         """Check if a chord is diatonic to the key"""
-        chord_root_index = self.note_indices[chord.root]
+        chord_root_index = NOTE_TO_PC[chord.root]
         scale_degrees = self.get_scale_degrees(
-            self.note_indices[key.tonic], 
+            NOTE_TO_PC[key.tonic], 
             key.scale_type
         )[:7]  # Only the first 7 degrees matter
         
@@ -363,9 +342,9 @@ class ScaleDetector:
             return chord
         
         # Find closest diatonic root
-        chord_root_index = self.note_indices[chord.root]
+        chord_root_index = NOTE_TO_PC[chord.root]
         scale_degrees = self.get_scale_degrees(
-            self.note_indices[key.tonic], 
+            NOTE_TO_PC[key.tonic], 
             key.scale_type
         )[:7]
         
@@ -374,7 +353,7 @@ class ScaleDetector:
                            key=lambda x: min(abs(x - chord_root_index), 
                                            12 - abs(x - chord_root_index)))
         
-        closest_root = self.index_notes[closest_degree]
+        closest_root = PC_TO_NOTE[closest_degree]
         
         # Use appropriate quality for that scale degree
         diatonic_chords = self.get_diatonic_chords(key)

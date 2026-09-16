@@ -10,7 +10,8 @@ from enum import Enum
 # Import all our modules
 from .markov_chain import MarkovChain, JazzChord
 from .key_detector import ScaleDetector, Key, ScaleType
-from .phrase_analysis import PhraseAnalyzer, Note, Phrase, BeatStrength
+from .phrase_analysis import PhraseAnalyzer, Phrase, BeatStrength
+from .notes import NOTE_TO_PC, PC_TO_NOTE, Note
 from .melody_generator import MelodyGenerator, create_melody_for_progression
 from .standard_finder import JazzStandardsScraper
 
@@ -296,8 +297,8 @@ class JazzChordGeneratorApp:
         # Tritone substitution only for the dominant seventh built on the key's
         # fifth degree (V7 -> bII7), the classic jazz substitution.
         if self._is_v7_of_key(colored, key) and random.random() < creativity * 0.4:
-            root_index = self.scale_detector.note_indices.get(colored.root, 0)
-            sub_root = self.scale_detector.index_notes[(root_index + 6) % 12]
+            root_index = NOTE_TO_PC.get(colored.root, 0)
+            sub_root = PC_TO_NOTE[(root_index + 6) % 12]
             colored = JazzChord(sub_root, "7", [])
 
         safe = self._SAFE_TENSIONS.get(colored.quality, [])
@@ -318,8 +319,8 @@ class JazzChordGeneratorApp:
         """Return True if the chord is the dominant seventh on the key's 5th."""
         if chord.quality != "7":
             return False
-        tonic_pc = self.scale_detector.note_indices.get(key.tonic, 0)
-        root_pc = self.scale_detector.note_indices.get(chord.root, 0)
+        tonic_pc = NOTE_TO_PC.get(key.tonic, 0)
+        root_pc = NOTE_TO_PC.get(chord.root, 0)
         return (root_pc - tonic_pc) % 12 == 7
 
     _CHORD_TONES = {
@@ -357,7 +358,7 @@ class JazzChordGeneratorApp:
 
     def _melody_compatible(self, chord: JazzChord, melody_note: str) -> bool:
         """Check if a melody note is a chord tone or available tension."""
-        root_pc = self.scale_detector.note_indices.get(chord.root, 0)
+        root_pc = NOTE_TO_PC.get(chord.root, 0)
         note_pc = self._note_pitch_class(melody_note)
 
         allowed = {root_pc + i for i in self._CHORD_TONES.get(chord.quality, [0, 4, 7])}
@@ -367,7 +368,7 @@ class JazzChordGeneratorApp:
     def _note_pitch_class(self, pitch: str) -> int:
         """Convert a pitch string (e.g. 'C4', 'Eb5') to a pitch class (0-11)."""
         note_name = ''.join(c for c in pitch if not c.isdigit())
-        return self.scale_detector.note_indices.get(note_name, 0)
+        return NOTE_TO_PC.get(note_name, 0)
     
     def _get_rhythm_pattern(self, duration: float) -> List[float]:
         """Get rhythm pattern based on current style"""

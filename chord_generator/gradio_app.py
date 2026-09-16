@@ -8,7 +8,7 @@ import gradio as gr
 
 from .app import CreativityLevel, JazzChordGeneratorApp, RhythmStyle
 from .audio import render_midi_to_mp3, render_progression_to_midi
-from .phrase_analysis import Note
+from .notes import Note
 
 _CREATIVITY_CHOICES = [level.name for level in CreativityLevel]
 _RHYTHM_CHOICES = [style.value for style in RhythmStyle]

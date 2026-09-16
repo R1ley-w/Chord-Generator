@@ -7,7 +7,8 @@ and a user-controlled creativity level.
 
 from .chords import JazzChord
 from .markov_chain import MarkovChain
-from .phrase_analysis import BeatStrength, Note, Phrase, PhraseAnalyzer
+from .phrase_analysis import BeatStrength, Phrase, PhraseAnalyzer
+from .notes import Note, midi_to_pitch, pitch_to_midi
 from .key_detector import Key, KeyAwareHarmonizer, ScaleDetector, ScaleType
 from .melody_generator import MelodyGenerator, create_melody_for_progression
 from .standard_finder import JazzStandardsScraper
