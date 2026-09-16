@@ -71,13 +71,18 @@
     return PITCH_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
   }
 
+  function isBlack(midi) {
+    var pc = midi % 12;
+    return pc === 1 || pc === 3 || pc === 6 || pc === 8 || pc === 10;
+  }
+
   function buildGrid() {
     gridEl.style.setProperty("--beats", BEATS);
     gridEl.innerHTML = "";
 
-    // Header row: empty corner + beat numbers.
+    // Header row: sticky corner + beat numbers.
     var corner = document.createElement("div");
-    corner.className = "grid-label";
+    corner.className = "grid-corner";
     gridEl.appendChild(corner);
     for (var b = 0; b < BEATS; b++) {
       var head = document.createElement("div");
@@ -86,16 +91,25 @@
       gridEl.appendChild(head);
     }
 
-    // Pitch rows, top to bottom (highest first).
+    // Keyboard column (top to bottom, highest pitch first).
     for (var midi = MAX_MIDI; midi >= MIN_MIDI; midi--) {
-      var label = document.createElement("div");
-      label.className = "grid-label";
-      label.textContent = midiToName(midi);
-      gridEl.appendChild(label);
+      var key = document.createElement("div");
+      key.className = "grid-key";
+      if (isBlack(midi)) {
+        var cap = document.createElement("span");
+        cap.className = "key-cap";
+        key.appendChild(cap);
+      } else if (midi % 12 === 0) {
+        key.textContent = midiToName(midi);
+      }
+      gridEl.appendChild(key);
 
       for (var beat = 0; beat < BEATS; beat++) {
         var cell = document.createElement("div");
         cell.className = "grid-cell";
+        if (isBlack(midi)) {
+          cell.classList.add("black-row");
+        }
         cell.dataset.pitch = String(midi);
         cell.dataset.beat = String(beat);
         gridEl.appendChild(cell);
@@ -194,7 +208,27 @@
       });
   }
 
-  gridEl.addEventListener("click", function (event) {
+  var drawing = null;
+
+  function findNoteIndexAt(midi, beat) {
+    for (var i = 0; i < notes.length; i++) {
+      if (noteCovers(notes[i], midi, beat)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  function cellFromPoint(clientX, clientY) {
+    var el = document.elementFromPoint(clientX, clientY);
+    return el ? el.closest(".grid-cell") : null;
+  }
+
+  function stopDrawing() {
+    drawing = null;
+  }
+
+  gridEl.addEventListener("pointerdown", function (event) {
     var cell = event.target.closest(".grid-cell");
     if (!cell) {
       return;
@@ -202,24 +236,46 @@
     var midi = parseInt(cell.dataset.pitch, 10);
     var beat = parseInt(cell.dataset.beat, 10);
 
-    var index = -1;
-    for (var i = 0; i < notes.length; i++) {
-      if (noteCovers(notes[i], midi, beat)) {
-        index = i;
-        break;
-      }
+    // Pressing an existing note removes it.
+    var existing = findNoteIndexAt(midi, beat);
+    if (existing >= 0) {
+      notes.splice(existing, 1);
+      renderGrid();
+      renderText();
+      return;
     }
 
-    if (index >= 0) {
-      notes.splice(index, 1);
-    } else {
-      notes.push({ pitch: midi, start: beat, duration: 1 });
-      playNote(midi, 0.25, 0);
-    }
-
+    // Pressing empty space starts a new note; dragging sets its length.
+    notes.push({ pitch: midi, start: beat, duration: 1 });
+    drawing = { index: notes.length - 1, pitch: midi, startBeat: beat };
+    playNote(midi, 0.25, 0);
     renderGrid();
     renderText();
   });
+
+  document.addEventListener("pointermove", function (event) {
+    if (!drawing) {
+      return;
+    }
+    var cell = cellFromPoint(event.clientX, event.clientY);
+    if (!cell) {
+      return;
+    }
+    var midi = parseInt(cell.dataset.pitch, 10);
+    if (midi !== drawing.pitch) {
+      return;
+    }
+    var beat = parseInt(cell.dataset.beat, 10);
+    var duration = Math.max(1, beat - drawing.startBeat + 1);
+    if (notes[drawing.index]) {
+      notes[drawing.index].duration = duration;
+    }
+    renderGrid();
+    renderText();
+  });
+
+  document.addEventListener("pointerup", stopDrawing);
+  document.addEventListener("pointercancel", stopDrawing);
 
   textEl.addEventListener("focus", function () { editingText = true; });
   textEl.addEventListener("blur", function () {

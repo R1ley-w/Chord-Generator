@@ -234,41 +234,68 @@ textarea:focus, select:focus {
 /* Note grid */
 
 .grid-scroll {
-  overflow-x: auto;
+  overflow: auto;
   border: 1px solid var(--line);
   border-radius: 0;
   margin-bottom: 16px;
+  height: 320px;
 }
 
 .note-grid {
   display: grid;
   min-width: 640px;
-  grid-template-columns: 52px repeat(var(--beats, 32), minmax(18px, 1fr));
+  grid-template-columns: 56px repeat(var(--beats, 32), minmax(18px, 1fr));
   background: var(--surface);
 }
 
-.grid-label, .grid-beat-header, .grid-cell {
+.grid-key, .grid-beat-header, .grid-cell {
   min-height: 22px;
 }
 
-.grid-label {
+.grid-key {
+  position: sticky;
+  left: 0;
+  z-index: 3;
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 8px;
-  font-size: 0.72rem;
-  color: var(--ink-soft);
+  align-items: flex-end;
+  padding: 0 6px 2px;
+  font-size: 0.62rem;
+  color: #c0bcc9;
+  background: #fff;
   border-bottom: 1px solid var(--line);
   border-right: 1px solid var(--line);
   user-select: none;
 }
 
+.grid-key .key-cap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: #3b3f52;
+}
+
+.grid-corner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+}
+
 .grid-beat-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.66rem;
   color: var(--ink-soft);
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
   border-right: 1px solid var(--line);
   user-select: none;
@@ -278,7 +305,13 @@ textarea:focus, select:focus {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   cursor: pointer;
+  background: #fff;
+  touch-action: none;
   transition: background 0.12s ease;
+}
+
+.grid-cell.black-row {
+  background: #f3f1f7;
 }
 
 .grid-cell:hover {
@@ -552,7 +585,7 @@ textarea:focus, select:focus {
     min-width: 0;
   }
 
-  .grid-label, .grid-beat-header, .grid-cell {
+  .grid-key, .grid-beat-header, .grid-cell {
     min-height: 28px;
   }
 
