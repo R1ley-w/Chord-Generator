@@ -1,18 +1,12 @@
 import random
 import json
-import re
 from collections import defaultdict, Counter
 from typing import List, Dict, Tuple, Optional, Set
 import numpy as np
-from .chords import JazzChord
+from .chords import JazzChord, parse_chord_symbol
 
 class MarkovChain:
     """Markov Chain for jazz chord progression generation"""
-
-    # Chord quality names, longest first so "m7b5" wins over "m7", etc.
-    _QUALITY_NAMES = ["maj7", "m7b5", "dim7", "7sus4", "7sus2", "m7", "7"]
-    # Extension tokens, longest first so "b13" wins over "13", etc.
-    _EXTENSION_TOKENS = ["b13", "#11", "b9", "#9", "13", "11", "9"]
 
     def __init__(self, order: int = 2):
         self.order = order
@@ -209,43 +203,10 @@ class MarkovChain:
             prev_str = str(previous_chord)
             if prev_str in common_progressions:
                 next_str = common_progressions[prev_str]
-                return self._parse_chord_string(next_str)
+                return parse_chord_symbol(next_str)
         
         return random.choice(common_chords)
     
-    def _parse_chord_string(self, chord_str: str) -> Optional[JazzChord]:
-        """Parse a chord symbol produced by ``str(JazzChord)``.
-
-        Handles accidental roots (F#, Bb), every quality the model stores, and
-        concatenated extensions such as "G79b9" -> JazzChord("G", "7", ["9", "b9"]).
-        """
-        match = re.match(r'^([A-G][#b]?)(.*)$', chord_str)
-        if not match:
-            return None
-
-        root, rest = match.groups()
-        quality = "maj7"
-        for name in self._QUALITY_NAMES:
-            if rest.startswith(name):
-                quality = name
-                rest = rest[len(name):]
-                break
-
-        return JazzChord(root, quality, self._parse_extensions(rest))
-
-    def _parse_extensions(self, ext_str: str) -> List[str]:
-        """Tokenize a concatenated extension string into individual tensions."""
-        extensions = []
-        while ext_str:
-            for token in self._EXTENSION_TOKENS:
-                if ext_str.startswith(token):
-                    extensions.append(token)
-                    ext_str = ext_str[len(token):]
-                    break
-            else:
-                ext_str = ext_str[1:]
-        return extensions
-
     def generate_sequence(self, length: int = 8, temperature: float = 1.0, 
                          start_sequence: List[JazzChord] = None) -> List[JazzChord]:
         """Generate a complete chord progression"""
@@ -297,7 +258,7 @@ class MarkovChain:
         """Load a previously saved model, reconstructing chord objects exactly.
 
         Probabilities are restored directly (no count round-trip), and state
-        keys are parsed with ``_parse_chord_string`` so extended chords such as
+        keys are parsed with ``parse_chord_symbol`` so extended chords such as
         "G79b9" survive the round trip.
         """
         with open(filepath, 'r') as f:
@@ -309,7 +270,7 @@ class MarkovChain:
         self.chord_vocab = set()
 
         for state_str, probabilities in model_data['transitions'].items():
-            state_chords = [self._parse_chord_string(s) for s in json.loads(state_str)]
+            state_chords = [parse_chord_symbol(s) for s in json.loads(state_str)]
             state_chords = [c for c in state_chords if c is not None]
             if not state_chords:
                 continue
@@ -320,7 +281,7 @@ class MarkovChain:
                 self.chord_vocab.add(chord)
 
             for chord_str, prob in probabilities.items():
-                chord = self._parse_chord_string(chord_str)
+                chord = parse_chord_symbol(chord_str)
                 if chord is None:
                     continue
                 self._probabilities[state][chord] = float(prob)
@@ -329,7 +290,7 @@ class MarkovChain:
 
         self.start_states = []
         for state_list in model_data.get('start_states', []):
-            chords = [self._parse_chord_string(s) for s in state_list]
+            chords = [parse_chord_symbol(s) for s in state_list]
             chords = [c for c in chords if c is not None]
             if chords:
                 self.start_states.append(tuple(chords))

@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from urllib.parse import urljoin
 import os
-from .markov_chain import JazzChord, MarkovChain
+from .chords import JazzChord, parse_chord_symbol
+from .markov_chain import MarkovChain
 from .key_detector import ScaleDetector
 
 # Default location for scraped standards, relative to the project root.
@@ -19,22 +20,6 @@ class JazzStandardsScraper:
         self.data_dir = data_dir
         self.scale_detector = ScaleDetector()
         os.makedirs(data_dir, exist_ok=True)
-        
-        # Common jazz chord mappings for normalization
-        self.chord_mappings = {
-            # Major chords
-            "maj": "maj7", "M": "maj7", "M7": "maj7", "Δ": "maj7", "ma7": "maj7",
-            # Minor chords  
-            "m": "m7", "min": "m7", "mi": "m7", "mi7": "m7", "-": "m7", "-7": "m7",
-            # Dominant chords
-            "dom": "7", "dom7": "7",
-            # Half-diminished
-            "ø": "m7b5", "hdim": "m7b5", "min7b5": "m7b5",
-            # Diminished
-            "dim": "dim7", "°": "dim7", "°7": "dim7",
-            # Suspended
-            "sus": "7sus4", "sus4": "7sus4", "sus2": "7sus2"
-        }
     
     def scrape_jazzstandards_com(self) -> List[Dict]:
         """Scrape from jazzstandards.com"""
@@ -213,7 +198,7 @@ class JazzStandardsScraper:
             chords = []
             for chord_str in chords_str:
                 if chord_str.strip():
-                    jazz_chord = self._parse_chord_symbol(chord_str.strip())
+                    jazz_chord = parse_chord_symbol(chord_str.strip())
                     if jazz_chord:
                         chords.append(jazz_chord)
             
@@ -228,46 +213,6 @@ class JazzStandardsScraper:
             print(f"Error parsing iReal format: {e}")
         
         return None
-    
-    def _parse_chord_symbol(self, chord_str: str) -> Optional[JazzChord]:
-        """Parse a chord symbol into JazzChord object"""
-        try:
-            # Remove parentheses and other non-essential characters
-            chord_str = re.sub(r'[()]', '', chord_str)
-            
-            # Extract root note
-            root_match = re.match(r'^([A-G][#b]?)', chord_str)
-            if not root_match:
-                return None
-                
-            root = root_match.group(1)
-            rest = chord_str[len(root):]
-            
-            # Map to standard quality
-            quality = "maj7"  # Default
-            
-            # Check for specific quality patterns
-            for pattern, standard_quality in self.chord_mappings.items():
-                if pattern in rest:
-                    quality = standard_quality
-                    break
-            
-            # Handle extensions
-            extensions = []
-            ext_patterns = {
-                '9': '9', '11': '11', '13': '13',
-                'b9': 'b9', '#9': '#9', '#11': '#11', 'b13': 'b13'
-            }
-            
-            for ext_pattern, ext_name in ext_patterns.items():
-                if ext_pattern in rest:
-                    extensions.append(ext_name)
-            
-            return JazzChord(root, quality, extensions)
-            
-        except Exception as e:
-            print(f"Error parsing chord '{chord_str}': {e}")
-            return None
     
     def _extract_chords_from_jazzstandards(self, soup) -> List[JazzChord]:
         """Extract chords from jazzstandards.com page (site-specific)"""
@@ -289,7 +234,7 @@ class JazzStandardsScraper:
                 for pattern in chord_patterns:
                     chord_matches = re.findall(pattern, text)
                     for chord_match in chord_matches:
-                        jazz_chord = self._parse_chord_symbol(chord_match)
+                        jazz_chord = parse_chord_symbol(chord_match)
                         if jazz_chord:
                             chords.append(jazz_chord)
                 
@@ -382,7 +327,7 @@ class JazzStandardsScraper:
         for title, chord_strings in more_standards:
             progression = []
             for chord_str in chord_strings:
-                jazz_chord = self._parse_chord_symbol(chord_str)
+                jazz_chord = parse_chord_symbol(chord_str)
                 if jazz_chord:
                     progression.append(jazz_chord)
             
@@ -505,16 +450,6 @@ class JazzStandardsScraper:
 class JazzStandardsParser:
     """Parser for the rich jazz-standards JSON format with sections and chords."""
 
-    def __init__(self):
-        self.chord_mappings = {
-            "6": "maj7", "M": "maj7", "M7": "maj7", "Δ": "maj7",
-            "m": "m7", "mi": "m7", "min": "m7", "-": "m7",
-            "dom": "7", "dom7": "7",
-            "ø": "m7b5", "hdim": "m7b5", "min7b5": "m7b5",
-            "dim": "dim7", "°": "dim7",
-            "sus": "7sus4", "sus4": "7sus4", "sus2": "7sus2",
-        }
-
     def parse_json_file(self, file_path: str) -> List[List[JazzChord]]:
         """Parse the JSON file and extract chord progressions for training."""
         print(f"Parsing jazz standards from {file_path}...")
@@ -557,42 +492,10 @@ class JazzStandardsParser:
                 chord_str = chord_str.strip()
                 if not chord_str:
                     continue
-                jazz_chord = self._parse_single_chord(chord_str)
+                jazz_chord = parse_chord_symbol(chord_str)
                 if jazz_chord:
                     chords.append(jazz_chord)
         return chords
-
-    def _parse_single_chord(self, chord_str: str) -> Optional[JazzChord]:
-        """Parse a single chord symbol into a JazzChord object."""
-        root_match = re.match(r'^([A-G][#b]?)', chord_str)
-        if not root_match:
-            return None
-
-        root = root_match.group(1)
-        rest = chord_str[len(root):]
-        return JazzChord(root, self._determine_chord_quality(rest), self._extract_extensions(rest))
-
-    def _determine_chord_quality(self, rest: str) -> str:
-        """Determine chord quality from the remainder of the chord symbol."""
-        if not rest:
-            return "7"
-
-        for indicator, quality in self.chord_mappings.items():
-            if indicator in rest:
-                return quality
-
-        if any(char.isdigit() for char in rest):
-            return "7"
-        return "maj7"
-
-    def _extract_extensions(self, rest: str) -> List[str]:
-        """Extract chord extensions from the chord symbol."""
-        extensions = []
-        for pattern, ext_name in {"9": "9", "11": "11", "13": "13",
-                                  "b9": "b9", "#9": "#9", "#11": "#11", "b13": "b13"}.items():
-            if pattern in rest:
-                extensions.append(ext_name)
-        return extensions
 
 class JazzStandardsTrainer:
     """Trains a Markov chain using the rich jazz-standards JSON format."""
