@@ -15,10 +15,10 @@ from fastapi.templating import Jinja2Templates
 from chord_generator import (
     CreativityLevel,
     JazzChordGeneratorApp,
-    Note,
     RhythmStyle,
 )
 from chord_generator.audio import render_midi_to_mp3, render_progression_to_midi
+from chord_generator.notes import parse_melody_text
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
@@ -47,33 +47,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Jazz Chord Generator", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-
-
-def parse_melody_text(text: str) -> list[Note]:
-    """Parse one note per line as ``pitch [start] [duration]``.
-
-    When ``start``/``duration`` are omitted, notes are placed one beat apart.
-    """
-    notes = []
-    auto_start = 0.0
-    for line in text.strip().splitlines():
-        line = line.replace(",", " ").strip()
-        if not line:
-            continue
-
-        parts = line.split()
-        pitch = parts[0]
-        if len(parts) == 1:
-            start, duration = auto_start, 1.0
-        elif len(parts) == 2:
-            start, duration = float(parts[1]), 1.0
-        else:
-            start, duration = float(parts[1]), float(parts[2])
-
-        notes.append(Note(pitch, start, duration))
-        auto_start = start + duration
-
-    return notes
 
 
 def _chord_rows(app: JazzChordGeneratorApp) -> list[dict]:

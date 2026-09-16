@@ -2,6 +2,7 @@
 
 import re
 from dataclasses import dataclass
+from typing import List
 
 NOTE_TO_PC = {
     'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4,
@@ -41,3 +42,30 @@ def pitch_to_midi(pitch: str):
 def midi_to_pitch(midi: int) -> str:
     """Convert a MIDI number to a note string, spelling black keys with sharps."""
     return f"{PC_TO_NOTE[midi % 12]}{midi // 12 - 1}"
+
+
+def parse_melody_text(text: str) -> List[Note]:
+    """Parse one note per line as ``pitch [start] [duration]``.
+
+    When ``start``/``duration`` are omitted, notes are placed one beat apart.
+    """
+    notes = []
+    auto_start = 0.0
+    for line in text.strip().splitlines():
+        line = line.replace(",", " ").strip()
+        if not line:
+            continue
+
+        parts = line.split()
+        pitch = parts[0]
+        if len(parts) == 1:
+            start, duration = auto_start, 1.0
+        elif len(parts) == 2:
+            start, duration = float(parts[1]), 1.0
+        else:
+            start, duration = float(parts[1]), float(parts[2])
+
+        notes.append(Note(pitch, start, duration))
+        auto_start = start + duration
+
+    return notes

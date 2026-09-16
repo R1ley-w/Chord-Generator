@@ -2,13 +2,12 @@
 
 import os
 import tempfile
-from typing import List
 
 import gradio as gr
 
 from .app import CreativityLevel, JazzChordGeneratorApp, RhythmStyle
 from .audio import render_midi_to_mp3, render_progression_to_midi
-from .notes import Note
+from .notes import parse_melody_text
 
 _CREATIVITY_CHOICES = [level.name for level in CreativityLevel]
 _RHYTHM_CHOICES = [style.value for style in RhythmStyle]
@@ -23,33 +22,6 @@ def _get_app() -> JazzChordGeneratorApp:
         _app = JazzChordGeneratorApp()
         _app.train_model()
     return _app
-
-
-def _parse_melody_text(text: str) -> List[Note]:
-    """Parse melody notes, one per line as ``pitch [start] [duration]``.
-
-    When ``start``/``duration`` are omitted, notes are placed one beat apart.
-    """
-    notes = []
-    auto_start = 0.0
-    for line in text.strip().splitlines():
-        line = line.replace(",", " ").strip()
-        if not line:
-            continue
-
-        parts = line.split()
-        pitch = parts[0]
-        if len(parts) == 1:
-            start, duration = auto_start, 1.0
-        elif len(parts) == 2:
-            start, duration = float(parts[1]), 1.0
-        else:
-            start, duration = float(parts[1]), float(parts[2])
-
-        notes.append(Note(pitch, start, duration))
-        auto_start = start + duration
-
-    return notes
 
 
 def _format_progression(app: JazzChordGeneratorApp) -> str:
@@ -70,7 +42,7 @@ def _demo_melody_text() -> str:
 
 
 def generate(melody_text, creativity_name, use_phrases, rhythm_style_name):
-    notes = _parse_melody_text(melody_text)
+    notes = parse_melody_text(melody_text)
     if not notes:
         raise gr.Error("Enter at least one melody note, e.g. 'C4 0.0 1.0'.")
 
