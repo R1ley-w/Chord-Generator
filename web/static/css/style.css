@@ -22,7 +22,7 @@ html, body {
 }
 
 body {
-  font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Segoe UI Variable", "Segoe UI", Helvetica, Arial, sans-serif;
   color: var(--ink);
   background: var(--bg);
   min-height: 100vh;
@@ -154,7 +154,7 @@ textarea, select {
 textarea {
   resize: vertical;
   line-height: 1.5;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Segoe UI Variable", "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 textarea:focus, select:focus {
