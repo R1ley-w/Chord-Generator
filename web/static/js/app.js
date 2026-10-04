@@ -110,6 +110,9 @@
         if (isBlack(midi)) {
           cell.classList.add("black-row");
         }
+        if (beat % 4 === 3) {
+          cell.classList.add("bar-line");
+        }
         cell.dataset.pitch = String(midi);
         cell.dataset.beat = String(beat);
         gridEl.appendChild(cell);
@@ -128,13 +131,23 @@
       var midi = parseInt(cell.dataset.pitch, 10);
       var beat = parseInt(cell.dataset.beat, 10);
       var on = false;
+      var noteStart = false;
+      var noteEnd = false;
       for (var j = 0; j < notes.length; j++) {
-        if (noteCovers(notes[j], midi, beat)) {
+        var note = notes[j];
+        if (noteCovers(note, midi, beat)) {
           on = true;
-          break;
+          if (note.start === beat) {
+            noteStart = true;
+          }
+          if (note.start + note.duration - 1 === beat) {
+            noteEnd = true;
+          }
         }
       }
       cell.classList.toggle("on", on);
+      cell.classList.toggle("note-start", on && noteStart);
+      cell.classList.toggle("note-end", on && noteEnd);
     }
   }
 

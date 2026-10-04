@@ -1,12 +1,14 @@
 :root {
-  --bg: #fdf5f7;
-  --surface: #ffffff;
-  --accent: #d96688;
-  --accent-dark: #c45477;
-  --accent-soft: #fbe4ec;
-  --ink: #3a2f33;
-  --ink-soft: #766469;
-  --line: #f1d9e1;
+  --bg: #1e1e1e;
+  --surface: #262626;
+  --accent: #4fc1a0;
+  --accent-dark: #3ca88a;
+  --accent-soft: #2b3a36;
+  --ink: #e8e8e8;
+  --ink-soft: #9a9a9a;
+  --line: #333333;
+  --note: #5fd3a0;
+  --note-dark: #48c08a;
   --radius: 0px;
 }
 
@@ -221,7 +223,7 @@ textarea:focus, select:focus {
 }
 
 .btn-primary {
-  color: #fff;
+  color: #101010;
   background: var(--accent);
 }
 
@@ -260,8 +262,8 @@ textarea:focus, select:focus {
   align-items: flex-end;
   padding: 0 6px 2px;
   font-size: 0.62rem;
-  color: #c0bcc9;
-  background: #fff;
+  color: #6b6b6b;
+  background: #cfcfcf;
   border-bottom: 1px solid var(--line);
   border-right: 1px solid var(--line);
   user-select: none;
@@ -273,7 +275,7 @@ textarea:focus, select:focus {
   left: 0;
   right: 0;
   height: 60%;
-  background: #3b3f52;
+  background: #3a3a3a;
 }
 
 .grid-corner {
@@ -302,16 +304,20 @@ textarea:focus, select:focus {
 }
 
 .grid-cell {
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border-right: 1px solid #2f2f2f;
+  border-bottom: 1px solid #2f2f2f;
   cursor: pointer;
-  background: #fff;
+  background: #1e1e1e;
   touch-action: none;
   transition: background 0.12s ease;
 }
 
 .grid-cell.black-row {
-  background: #f3f1f7;
+  background: #242424;
+}
+
+.grid-cell.bar-line {
+  border-right-color: #4a4a4a;
 }
 
 .grid-cell:hover {
@@ -319,11 +325,25 @@ textarea:focus, select:focus {
 }
 
 .grid-cell.on {
-  background: var(--accent);
+  background: var(--note);
+  border-right: none;
+  border-bottom: none;
 }
 
 .grid-cell.on:hover {
-  background: var(--accent-dark);
+  background: var(--note-dark);
+}
+
+.grid-cell.on.note-start {
+  border-radius: 4px 0 0 4px;
+}
+
+.grid-cell.on.note-end {
+  border-radius: 0 4px 4px 0;
+}
+
+.grid-cell.on.note-start.note-end {
+  border-radius: 4px;
 }
 
 /* Results */
