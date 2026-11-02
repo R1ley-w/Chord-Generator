@@ -49,6 +49,14 @@ app = FastAPI(title="Jazz Chord Generator", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 
+@app.middleware("http")
+async def no_cache_static(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 def _chord_rows(app: JazzChordGeneratorApp) -> list[dict]:
     rows = []
     for cd in app.current_progression:

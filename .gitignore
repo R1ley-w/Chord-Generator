@@ -11,3 +11,5 @@ data/soundfonts/
 data/generated/
 jazz_progression*.json
 .env
+Caddyfile.save
+anaconda_projects/db/project_filebrowser.db
